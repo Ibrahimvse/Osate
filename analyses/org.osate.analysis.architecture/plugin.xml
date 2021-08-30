@@ -1,0 +1,395 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright (c) 2004-2021 Carnegie Mellon University and others. (see Contributors file). 
+All Rights Reserved.
+
+NO WARRANTY. ALL MATERIAL IS FURNISHED ON AN "AS-IS" BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY
+KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE
+OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT
+MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
+
+This program and the accompanying materials are made available under the terms of the Eclipse Public License 2.0
+which is available at https://www.eclipse.org/legal/epl-2.0/
+SPDX-License-Identifier: EPL-2.0
+
+Created, in part, with funding and support from the United States Government. (see Acknowledgments file).
+
+This program includes and/or can make use of certain third party source code, object code, documentation and other
+files ("Third Party Software"). The Third Party Software that is used by this program is dependent upon your system
+configuration. By using this program, You agree to comply with any and all relevant Third Party Software terms and
+conditions contained in any such Third Party Software or separate license file distributed with such Third Party
+Software. The parties who own the Third Party Software ("Third Party Licensors") are intended third party benefici-
+aries to this license with respect to the terms applicable to their Third Party Software. Third Party Software li-
+censes only apply to the Third Party Software and not any other portion of this program or this program as a whole.
+-->
+<?eclipse version="3.0"?>
+<plugin>
+   <extension
+         id="ModelStatisticsObjectMarker"
+         name="Model Statistics Marker"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.osate.aadl2.modelsupport.AadlObjectMarker"/>
+      <persistent value="true"/>
+   </extension>
+
+   
+   <extension
+         id="ConnectionBindingConsistencyObjectMarker"
+         name="Connection Binding Consistency Marker"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.osate.aadl2.modelsupport.AadlObjectMarker"/>
+      <persistent value="true"/>
+   </extension>
+   
+   <extension
+         id="A429ConnectionConsistencyObjectMarker"
+         name="A429 Connection Consistency Marker"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.osate.aadl2.modelsupport.AadlObjectMarker"/>
+      <persistent value="true"/>
+   </extension>
+   
+   <extension
+         id="PortConnectionConsistencyObjectMarker"
+         name="Port Connection Consistency Marker"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.osate.aadl2.modelsupport.AadlObjectMarker"/>
+      <persistent value="true"/>
+   </extension>
+   
+   <extension
+         id="WeightTotalObjectMarker"
+         name="Weight Total Marker"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.osate.aadl2.modelsupport.AadlObjectMarker"/>
+      <persistent value="true"/>
+   </extension>
+   
+   <extension
+         id="CheckBindingConstraintsObjectMarker"
+         name="Check Binding Constraints Marker"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.osate.aadl2.modelsupport.AadlObjectMarker">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+
+   <extension
+         id="UnusedClassifierMarker"
+         name="Unused Classifier Marker"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.osate.aadl2.modelsupport.AadlObjectMarker"/>
+      <persistent value="true"/>
+   </extension>
+
+   <extension
+         point="org.eclipse.help.toc">
+      <toc
+            file="help/toc_check_binding_constraints.xml"
+            primary="true">
+      </toc>
+   </extension>
+   <extension
+         point="org.eclipse.help.toc">
+      <toc
+            file="help/toc_check_connection_binding_consistency.xml"
+            primary="true">
+      </toc>
+   </extension>
+
+   <extension
+         point="org.eclipse.help.toc">
+      <toc
+            file="help/toc_model_maintenance.xml"
+            primary="true">
+      </toc>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <category
+            id="org.osate.analysis.architecture.category"
+            name="%actionSet.label">
+      </category>
+       <command
+       		 categoryId="org.osate.analysis.architecture.category"
+       		 id="org.osate.analysis.architecture.unusedclassifiers.findUnusedClassifiers"
+       		 name="Find Unused Classifiers" />
+      <command
+            categoryId="org.osate.analysis.architecture.category"
+            id="org.osate.analysis.architecture.checkConnectionBindingConsistency"
+            name="%DoConnectionBindingConsistency.label">
+      </command>
+      <command
+            categoryId="org.osate.analysis.architecture.category"
+            id="org.osate.analysis.architecture.portConnectionConsistency"
+            name="%PortConnectionConsistency.label">
+      </command>
+      <command
+            categoryId="org.osate.analysis.architecture.category"
+            id="org.osate.analysis.architecture.checkA429PortConnectionConsistency"
+            name="%A429ConnectionConsistency.label">
+      </command>
+      <command
+            categoryId="org.osate.analysis.architecture.category"
+            id="org.osate.analysis.architecture.propertyTotals"
+            name="%CheckPropertyTotals.label">
+      </command>
+      <command
+            categoryId="org.osate.analysis.architecture.category"
+            id="org.osate.analysis.architecture.checkBindingConstraints"
+            name="Check Binding Constraints">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.handlers">
+       <handler
+             class="org.osate.analysis.architecture.unusedclassifiers.handlers.FindUnusedClassifiers"
+             commandId="org.osate.analysis.architecture.unusedclassifiers.findUnusedClassifiers">
+          <enabledWhen>
+             <with variable="selection">
+                <and>
+                   <count value="+" />
+                   <iterate>
+                      <reference definitionId="org.osate.ui.definition.isPackageFile"/>
+                   </iterate>
+                </and>
+             </with>
+          </enabledWhen>
+       </handler>
+      <handler
+            class="org.osate.analysis.architecture.handlers.CheckConnectionBindingConsistency"
+            commandId="org.osate.analysis.architecture.checkConnectionBindingConsistency">
+         <enabledWhen>
+            <reference definitionId="org.osate.ui.definition.isInstanceFileOrSystemInstanceSelected"/>
+         </enabledWhen>
+      </handler>
+      <handler
+            class="org.osate.analysis.architecture.handlers.DoPortConnectionConsistency"
+            commandId="org.osate.analysis.architecture.portConnectionConsistency">
+         <enabledWhen>
+            <reference definitionId="org.osate.ui.definition.isInstanceFileOrSystemInstanceSelected"/>
+         </enabledWhen>
+      </handler>
+      <handler
+            class="org.osate.analysis.architecture.handlers.CheckA429PortConnectionConsistency"
+            commandId="org.osate.analysis.architecture.checkA429PortConnectionConsistency">
+         <enabledWhen>
+            <reference definitionId="org.osate.ui.definition.isInstanceFileOrSystemInstanceSelected"/>
+         </enabledWhen>
+      </handler>
+      <handler
+            class="org.osate.analysis.architecture.handlers.DoPropertyTotals"
+            commandId="org.osate.analysis.architecture.propertyTotals">
+         <enabledWhen>
+            <reference definitionId="org.osate.ui.definition.isInstanceFileOrSystemInstanceSelected"/>
+         </enabledWhen>
+      </handler>
+      <handler
+            class="org.osate.analysis.architecture.handlers.CheckBindingConstraints"
+            commandId="org.osate.analysis.architecture.checkBindingConstraints">
+         <enabledWhen>
+            <reference definitionId="org.osate.ui.definition.isInstanceFileOrSystemInstanceSelected"/>
+         </enabledWhen>
+      </handler>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commandImages">
+      <image
+            commandId="org.osate.analysis.architecture.checkConnectionBindingConsistency"
+            icon="icons/ConnBinding.gif">
+      </image>
+      <image
+            commandId="org.osate.analysis.architecture.portConnectionConsistency"
+            icon="icons/portConnCon.gif">
+      </image>
+      <image
+            commandId="org.osate.analysis.architecture.checkA429PortConnectionConsistency"
+            icon="icons/a429ConnCon.gif">
+      </image>
+      <image
+            commandId="org.osate.analysis.architecture.propertyTotals"
+            icon="icons/checkPropertyTotals.gif">
+      </image>
+      <image
+            commandId="org.osate.analysis.architecture.checkBindingConstraints"
+            icon="icons/check_binding.png">
+      </image>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="menu:org.osate.ui.budgetMenu?after=core">
+         <command
+               commandId="org.osate.analysis.architecture.propertyTotals">
+         </command>
+      </menuContribution>
+      <menuContribution
+            locationURI="menu:org.osate.ui.modelCleanupMenu?after=core">
+         <command
+               commandId="org.osate.analysis.architecture.unusedclassifiers.findUnusedClassifiers"
+               style="push" />
+      </menuContribution>
+      <menuContribution
+            locationURI="menu:org.osate.ui.semanticChecksMenu?after=core">
+         <command
+               commandId="org.osate.analysis.architecture.checkA429PortConnectionConsistency">
+         </command>
+         <command
+               commandId="org.osate.analysis.architecture.portConnectionConsistency">
+         </command>
+         <command
+               commandId="org.osate.analysis.architecture.checkBindingConstraints">
+         </command>
+         <command
+               commandId="org.osate.analysis.architecture.checkConnectionBindingConsistency">
+         </command>
+      </menuContribution>
+      <menuContribution
+            locationURI="toolbar:org.osate.ui.budgetToolbar?after=core">
+         <command
+               commandId="org.osate.analysis.architecture.propertyTotals"
+               tooltip="%CheckPropertyTotals.toolTip">
+            <!--
+               Remove visibleWhen on the command when this bug is fixed:
+               https://bugs.eclipse.org/bugs/show_bug.cgi?id=201589
+            -->
+            <visibleWhen
+                  checkEnabled="false">
+               <reference definitionId="org.osate.ui.definition.inAadlPerspective"/>
+            </visibleWhen>
+         </command>
+      </menuContribution>
+      <menuContribution
+            locationURI="toolbar:org.osate.ui.semanticChecksToolbar?after=core">
+         <command
+               commandId="org.osate.analysis.architecture.checkA429PortConnectionConsistency"
+               tooltip="%A429ConnectionConsistency.toolTip">
+            <!--
+               Remove visibleWhen on the command when this bug is fixed:
+               https://bugs.eclipse.org/bugs/show_bug.cgi?id=201589
+            -->
+            <visibleWhen
+                  checkEnabled="false">
+               <reference definitionId="org.osate.ui.definition.inAadlPerspective"/>
+            </visibleWhen>
+         </command>
+         <command
+               commandId="org.osate.analysis.architecture.portConnectionConsistency"
+               tooltip="%PortConnectionConsistency.toolTip">
+            <!--
+               Remove visibleWhen on the command when this bug is fixed:
+               https://bugs.eclipse.org/bugs/show_bug.cgi?id=201589
+            -->
+            <visibleWhen
+                  checkEnabled="false">
+               <reference definitionId="org.osate.ui.definition.inAadlPerspective"/>
+            </visibleWhen>
+         </command>
+         <command
+               commandId="org.osate.analysis.architecture.checkBindingConstraints"
+               tooltip="Check actual bindings against constraints">
+            <!--
+               Remove visibleWhen on the command when this bug is fixed:
+               https://bugs.eclipse.org/bugs/show_bug.cgi?id=201589
+            -->
+            <visibleWhen
+                  checkEnabled="false">
+               <reference definitionId="org.osate.ui.definition.inAadlPerspective"/>
+            </visibleWhen>
+         </command>
+         <command
+               commandId="org.osate.analysis.architecture.checkConnectionBindingConsistency"
+               tooltip="%DoConnectionBindingConsistency.toolTip">
+            <!--
+               Remove visibleWhen on the command when this bug is fixed:
+               https://bugs.eclipse.org/bugs/show_bug.cgi?id=201589
+            -->
+            <visibleWhen
+                  checkEnabled="false">
+               <reference definitionId="org.osate.ui.definition.inAadlPerspective"/>
+            </visibleWhen>
+         </command>
+      </menuContribution>
+      <menuContribution
+            locationURI="popup:org.osate.ui.budgetNavigatorPopup?after=core">
+         <command
+               commandId="org.osate.analysis.architecture.propertyTotals">
+            <visibleWhen
+                  checkEnabled="true">
+            </visibleWhen>
+         </command>
+      </menuContribution>
+      <menuContribution
+            locationURI="popup:org.osate.ui.semanticChecksNavigatorPopup?after=core">
+         <command
+               commandId="org.osate.analysis.architecture.checkA429PortConnectionConsistency">
+            <visibleWhen
+                  checkEnabled="true">
+            </visibleWhen>
+         </command>
+         <command
+               commandId="org.osate.analysis.architecture.portConnectionConsistency">
+            <visibleWhen
+                  checkEnabled="true">
+            </visibleWhen>
+         </command>
+         <command
+               commandId="org.osate.analysis.architecture.checkBindingConstraints">
+            <visibleWhen
+                  checkEnabled="true">
+            </visibleWhen>
+         </command>
+         <command
+               commandId="org.osate.analysis.architecture.checkConnectionBindingConsistency">
+            <visibleWhen
+                  checkEnabled="true">
+            </visibleWhen>
+         </command>
+      </menuContribution>
+   </extension>
+ 
+            <!--
+               Register analysis classes with methods to be called for analysis execution
+            -->
+    <extension
+         point="org.osate.pluginsupport.registeredjavaclasses">
+      <class
+            path="org.osate.analysis.architecture.PropertyTotals">
+      </class>
+   </extension>
+   
+    <extension
+          point="org.eclipse.ui.ide.markerResolution">
+       <markerResolutionGenerator
+             class="org.osate.analysis.architecture.unusedclassifiers.UnusedClassifierMarkerResolutionGenerator"
+             markerType="org.osate.analysis.architecture.UnusedClassifierMarker">
+       </markerResolutionGenerator>
+    </extension>
+
+	<extension
+         point="org.eclipse.ui.navigator.viewer">
+  		<viewerActionBinding
+        	viewerId="org.osate.ui.navigator.AadlNavigator">
+     		<includes>
+     			<actionExtension pattern="org.osate.analysis.architecture.unusedclassifiers.*" />
+     		</includes>
+	  </viewerActionBinding>
+   </extension>
+
+	<extension
+         point="org.eclipse.ui.navigator.navigatorContent">
+      <actionProvider
+            class="org.osate.analysis.architecture.unusedclassifiers.FindUnusedClassifiersActionProvider"
+            id="org.osate.analysis.architecture.unusedclassifiers.findUnusedClassifiersAction">
+         <enablement>
+            <and>
+               <instanceof value="org.eclipse.core.resources.IFile" />
+               <test property="org.osate.ui.aadlPackage" forcePluginActivation="true" />
+            </and>
+         </enablement>
+      </actionProvider>
+	</extension>
+</plugin>

@@ -1,0 +1,585 @@
+/**
+ * Copyright (c) 2004-2021 Carnegie Mellon University and others. (see Contributors file). 
+ * All Rights Reserved.
+ * 
+ * NO WARRANTY. ALL MATERIAL IS FURNISHED ON AN "AS-IS" BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY
+ * KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE
+ * OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT
+ * MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
+ * 
+ * This program and the accompanying materials are made available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ * SPDX-License-Identifier: EPL-2.0
+ * 
+ * Created, in part, with funding and support from the United States Government. (see Acknowledgments file).
+ * 
+ * This program includes and/or can make use of certain third party source code, object code, documentation and other
+ * files ("Third Party Software"). The Third Party Software that is used by this program is dependent upon your system
+ * configuration. By using this program, You agree to comply with any and all relevant Third Party Software terms and
+ * conditions contained in any such Third Party Software or separate license file distributed with such Third Party
+ * Software. The parties who own the Third Party Software ("Third Party Licensors") are intended third party benefici-
+ * aries to this license with respect to the terms applicable to their Third Party Software. Third Party Software li-
+ * censes only apply to the Third Party Software and not any other portion of this program or this program as a whole.
+ */
+
+import org.eclipse.xsemantics.runtime.RuleEnvironment
+import java.util.HashMap
+import org.eclipse.emf.ecore.EObject
+import org.eclipse.xtext.nodemodel.util.NodeModelUtils
+import org.osate.aadl2.Aadl2Factory
+import org.osate.aadl2.AadlInteger
+import org.osate.aadl2.BooleanLiteral
+import org.osate.aadl2.IntegerLiteral
+import org.osate.aadl2.NamedElement
+import org.osate.aadl2.NumberType
+import org.osate.aadl2.NumberValue
+import org.osate.aadl2.Property
+import org.osate.aadl2.PropertyExpression
+import org.osate.aadl2.PropertyValue
+import org.osate.aadl2.RangeValue
+import org.osate.aadl2.RealLiteral
+import org.osate.aadl2.RecordValue
+import org.osate.aadl2.StringLiteral
+import org.osate.aadl2.instance.InstanceFactory
+import org.osate.aadl2.instance.InstanceObject
+import org.osate.aadl2.instance.InstanceReferenceValue
+import org.osate.alisa.common.common.ABinaryOperation
+import org.osate.alisa.common.common.AConditional
+import org.osate.alisa.common.common.AModelReference
+import org.osate.alisa.common.common.APropertyReference
+import org.osate.alisa.common.common.ARange
+import org.osate.alisa.common.common.AUnaryOperation
+import org.osate.alisa.common.common.AUnitExpression
+import org.osate.alisa.common.common.AVariableDeclaration
+import org.osate.alisa.common.common.AVariableReference
+import org.osate.alisa.common.common.ComputeDeclaration
+import org.osate.alisa.common.common.Operation
+import org.osate.alisa.common.common.ValDeclaration
+
+import static extension org.osate.alisa.common.typing.InterpreterUtil.*
+import org.eclipse.emf.ecore.util.EcoreUtil
+import org.osate.aadl2.PropertyConstant
+import org.osate.alisa.common.common.AFunctionCall
+
+system org.osate.alisa.common.typing.CommonInterpreter
+
+auxiliary {
+	combineNumeric(NumberType left, NumberType right): NumberType
+	chooseRoot(EObject io, RuleEnvironment G): NamedElement
+	errorPosition(EObject o): String
+}
+
+
+judgments {
+	// environment contains values for computed variables
+	interpretExpression |- PropertyExpression expression ~> output PropertyValue
+	interpretVariable ||- AVariableDeclaration decl ~> output PropertyValue
+	equal |= PropertyValue left : PropertyValue right
+	compare |> PropertyValue left : PropertyValue right
+	cmpNum |> PropertyValue left : PropertyValue right ~> output Integer
+}
+
+
+auxiliary combineNumeric(NumberType left, NumberType right) {
+	val result =
+			if (left instanceof AadlInteger && right instanceof AadlInteger)
+				Aadl2Factory.eINSTANCE.createAadlInteger
+			else
+				Aadl2Factory.eINSTANCE.createAadlReal
+	result.referencedUnitsType =
+			if (left.unitsType !== null)
+				left.unitsType
+			else
+				right.unitsType
+	result
+}
+
+
+auxiliary chooseRoot(EObject obj, RuleEnvironment G) {
+	val element = env(G, 'target', NamedElement)
+	element
+}
+
+
+auxiliary	errorPosition(EObject o) {
+	val fileName = o.eResource.URI.path
+	val line = NodeModelUtils.findActualNodeFor(o).startLine
+	' (' + fileName + ':' + line + ')'
+}
+
+// expression interpreter
+
+rule InterpretBinaryExpression
+	G |- ABinaryOperation binary ~> PropertyValue propVal
+from {
+	G |- binary.left ~> var PropertyValue leftVal
+	G |- binary.right ~> var PropertyValue rightVal
+	
+	propVal = 
+	switch (binary.operator) {
+		case AND, case OR, case ALT_AND, case ALT_OR: {
+			val boolVal = Aadl2Factory.eINSTANCE.createBooleanLiteral
+			val left = leftVal as BooleanLiteral
+			val right = rightVal as BooleanLiteral
+			boolVal.value = if (binary.operator == Operation.AND) {
+						// without if an exception is thrown!
+						if (left.getValue && right.getValue) true else false
+					} else {
+						if (left.getValue || right.getValue) true else false
+					}
+			boolVal
+		}
+		case EQ, case NEQ: {
+			val boolVal = Aadl2Factory.eINSTANCE.createBooleanLiteral
+			boolVal.value = { G |= leftVal : rightVal }
+			if (binary.operator == Operation.NEQ) {
+				boolVal.value = !boolVal.getValue
+			}
+			boolVal			
+		}
+		case LT: {
+			val boolVal = Aadl2Factory.eINSTANCE.createBooleanLiteral
+			boolVal.value = { G, 'op' <- binary.operator |> leftVal : rightVal }
+			boolVal
+		}
+		case LEQ: {
+			val boolVal = Aadl2Factory.eINSTANCE.createBooleanLiteral
+			boolVal.value = { G, 'op' <- binary.operator |> leftVal : rightVal }
+			boolVal
+		}
+		case GT: {
+			val boolVal = Aadl2Factory.eINSTANCE.createBooleanLiteral
+			boolVal.value = { G, 'op' <- binary.operator |> leftVal : rightVal }
+			boolVal
+		}
+		case GEQ: {
+			val boolVal = Aadl2Factory.eINSTANCE.createBooleanLiteral
+			boolVal.value = { G, 'op' <- binary.operator |> leftVal : rightVal }
+			boolVal
+		}
+		case IN: {
+			val boolVal = Aadl2Factory.eINSTANCE.createBooleanLiteral
+			switch (leftVal) {
+				NumberValue: {
+					val lessThan = { G, 'op' <- Operation.LT |> leftVal : rightVal }
+					val greaterThan = { G, 'op' <- Operation.GT |> leftVal : rightVal }
+					boolVal.value = !(lessThan || greaterThan)
+				}
+				RangeValue: {
+					G |- leftVal.minimum ~> var NumberValue min
+					G |- leftVal.maximum ~> var NumberValue max
+					val minLessThan = { G, 'op' <- Operation.LT |> min : rightVal }
+					val minGreaterThan = { G, 'op' <- Operation.GT |> min : rightVal }
+					val maxLessThan = { G, 'op' <- Operation.LT |> max : rightVal }
+					val maxGreaterThan = { G, 'op' <- Operation.GT |> max : rightVal }
+					boolVal.value = !(minLessThan || minGreaterThan) && !(maxLessThan || maxGreaterThan)
+				}
+			}
+			boolVal
+		}
+		case PLUS:
+			(leftVal as NumberValue).add(rightVal as NumberValue)
+		case MINUS:
+			(leftVal as NumberValue).subtract(rightVal as NumberValue)
+		case MULT:
+			(leftVal as NumberValue).multiply(rightVal as NumberValue)
+		case DIV:
+			(leftVal as NumberValue).divide(rightVal as NumberValue)
+		case INTDIV:
+			(leftVal as IntegerLiteral).divideInt(rightVal as IntegerLiteral)
+		case MOD:
+			(leftVal as IntegerLiteral).mod(rightVal as IntegerLiteral)
+		default: {
+			// nothing
+		}
+	}
+}
+
+
+rule InterpretFunctionCall
+	G |- AFunctionCall call ~> PropertyValue propVal
+from {
+	propVal = switch (call.function) {
+		case 'min': {
+		   	call.arguments.map [arg |
+				G |- arg ~> var PropertyValue pval
+				if (pval instanceof RangeValue){
+					pval.minimumValue
+				} else {
+					pval as NumberValue
+				}
+			].min()
+		}
+		case 'max': {
+			call.arguments.map [arg |
+				G |- arg ~> var PropertyValue pval
+				if (pval instanceof RangeValue){
+					pval.maximumValue
+				} else {
+					pval as NumberValue
+				}
+			].max()
+		}
+		case 'abs': {
+			G |- call.arguments.get(0) ~> var NumberValue pVal
+			switch (pVal) {
+				RealLiteral: pVal.value = if (pVal.value < 0) { -pVal.value } else { pVal.value }
+				IntegerLiteral: pVal.value = if (pVal.value < 0) { -pVal.value } else { pVal.value }
+			}
+			pVal
+		}
+		case 'round': {
+			G |- call.arguments.get(0) ~> var NumberValue pVal
+			pVal.round
+		}
+		case 'ceil': {
+			G |- call.arguments.get(0) ~> var NumberValue pVal
+			pVal.ceil
+		}
+		case 'floor': {
+			G |- call.arguments.get(0) ~> var NumberValue pVal
+			pVal.floor
+		}
+	}
+}
+
+
+
+
+rule InterpretUnaryExpression
+	G |- AUnaryOperation unary ~> PropertyValue propVal
+from {
+	G |- unary.operand ~> propVal
+	
+	switch (unary.operator) {
+		case MINUS:
+			switch (propVal) {
+				RealLiteral: propVal.value = -propVal.value
+				IntegerLiteral: propVal.value = -propVal.value
+			}
+		case NOT:
+			switch (propVal) {
+				BooleanLiteral: propVal.value = !propVal.getValue
+			}
+		default: {
+			// nothing
+		}
+	}
+}
+
+rule InterpretUnitExpression
+	G |- AUnitExpression unit ~> PropertyValue number
+from {
+	G |- unit.expression ~> var PropertyValue propval
+	if (propval instanceof NumberValue){
+		val num = EcoreUtil.copy(propval)
+		val unit_add = !unit.drop && !unit.convert && unit.unit !== null
+		if (unit.drop || unit.convert) {
+			switch (num) {
+				IntegerLiteral:
+					num.value = Math.round(num.getScaledValue(unit.unit))
+				RealLiteral:
+					num.value = num.getScaledValue(unit.unit)
+				default: {
+					// nothing
+				}
+			}
+		}	
+		if (unit.drop) {
+			num.unit = null
+		} else if (unit.convert || unit_add) {
+			num.unit = unit.unit
+		}
+		number = num
+	} else {
+		number = propval
+	}
+}
+
+// primary expressions
+
+rule InterpretVal
+	G ||- ValDeclaration varDecl ~> PropertyValue propVal
+from {
+	val map = env(G, 'vals', Object) as HashMap<ValDeclaration, PropertyValue>
+	if (map.containsKey(varDecl)) {
+		propVal = map.get(varDecl)
+	} else {
+		G |- varDecl.value ~> propVal
+		map.put(varDecl, propVal)
+	}
+}
+
+rule InterpretCompute
+	G ||- ComputeDeclaration varDecl ~> PropertyValue propVal
+from {
+	{ 
+		val map = env(G, 'computes', Object) as HashMap<String, PropertyValue>
+		map.containsKey(varDecl.name)
+		propVal = map.get(varDecl.name)
+	} or {
+		fail
+			error 'interpreter: compute variable ' + varDecl.name + ' has no value'
+	}
+}
+
+rule InterpretVarRef
+  G |- AVariableReference varRef ~> PropertyValue propVal
+from {
+	G ||- varRef.variable ~> propVal	
+}
+
+rule InterpetITE
+	G |- AConditional ite ~> PropertyValue propVal
+from {
+	G |- ite.^if ~> var BooleanLiteral cond
+	if (cond.getValue) {
+		G |- ite.then ~> propVal
+	} else {
+		G |- ite.^else ~> propVal
+	}
+}
+
+// access the AADL model or {
+
+rule InterpretModelReference
+	G |- AModelReference ref ~> InstanceReferenceValue propVal
+from {
+	// access the instance model
+	val resolved = {
+			val root = chooseRoot(ref, G)
+			ref.resolve(root)
+		}
+	{
+		resolved !== null
+		propVal = InstanceFactory.eINSTANCE.createInstanceReferenceValue
+		propVal.referencedInstanceObject = resolved
+	} or {
+		fail
+			error 'cannot resolve reference to model element ' + 
+					NodeModelUtils.findActualNodeFor(ref).text + errorPosition(ref)
+	}
+}
+
+rule InterpretPropertyReference
+	G |- APropertyReference prop ~> PropertyValue propVal
+from {
+	// access property on instance object
+	var NamedElement io
+	{
+		prop.modelElementReference !== null
+		G |- prop.modelElementReference ~> var InstanceReferenceValue element
+		io = element.referencedInstanceObject
+	} or {
+		io = chooseRoot(prop, G)
+	}
+	val namedVal = prop.property // property or constant
+	val pexp = switch (namedVal) {
+			Property:
+				try {
+					io.getSimplePropertyValue(namedVal)
+				} catch (Exception e) {
+					null
+				}
+				PropertyConstant:
+					namedVal.constantValue
+			default: 
+				null
+	}
+	propVal = if (pexp instanceof PropertyValue) pexp else null
+
+	propVal !== null
+  or {
+		fail
+			error 'cannot retrieve property value ' + 
+					NodeModelUtils.findActualNodeFor(prop).text + errorPosition(prop)
+	}
+}
+
+// literals
+
+axiom InterpretIntegerLiteral
+	G |- IntegerLiteral integer ~> {
+		val intVal = Aadl2Factory.eINSTANCE.createIntegerLiteral
+		intVal.value = integer.value
+		intVal
+	}
+
+axiom InterpretRealLiteral
+	G |- RealLiteral real ~> {
+		val realVal = Aadl2Factory.eINSTANCE.createRealLiteral
+		realVal.value = real.value
+		realVal
+	}
+
+axiom InterpretStringLiteral
+	G |- StringLiteral string ~> {
+		val stringVal = Aadl2Factory.eINSTANCE.createStringLiteral
+		stringVal.value = string.value
+		stringVal
+	}
+
+axiom InterpretBooleanLiteral
+	G |- BooleanLiteral bool ~> {
+		val boolVal = Aadl2Factory.eINSTANCE.createBooleanLiteral
+		boolVal.value = bool.getValue
+		boolVal
+	}
+
+rule InterpretRange
+	G |- ARange range ~> PropertyValue propVal
+from {
+	val rangeVal = Aadl2Factory.eINSTANCE.createRangeValue
+	G |- range.minimum ~> var NumberValue lower
+	G |- range.maximum ~> var NumberValue upper
+	rangeVal.minimum = lower
+	rangeVal.maximum = upper
+	propVal = rangeVal
+}
+
+
+rule NotImplemented
+	G |- PropertyExpression expression ~> PropertyValue propVal
+from {
+	fail
+		error 'not implemented'
+		source expression
+}
+
+// comparison 
+
+rule EqualBoolean
+	G |= BooleanLiteral left : BooleanLiteral right
+from {
+	left == right
+}
+
+rule EqualString
+	G |= StringLiteral left : StringLiteral right
+from {
+	left.equals(right)
+}
+
+rule EqualNumber
+	G |= NumberValue left : NumberValue right
+from {
+	left.compareTo(right) == 0
+}
+
+rule EqualRange
+	G |= RangeValue left : RangeValue right
+from {
+	G |- left.minimum ~> var NumberValue leftMin
+	G |- right.minimum ~> var NumberValue rightMin
+	G |- left.maximum ~> var NumberValue leftMax
+	G |- right.maximum ~> var NumberValue rightMax
+	leftMin.compareTo(rightMin) == 0 && leftMax.compareTo(rightMax) == 0
+}
+
+rule EqualRecord
+	G |= RecordValue left : RecordValue right
+from {
+	val leftVals = left.ownedFieldValues.map[ G |- it.value ~> var PropertyValue propVal; propVal ]
+	val rightVals = right.ownedFieldValues.map[ G |- it.value ~> var PropertyValue propVal; propVal ]
+	val rightIter = rightVals.iterator()
+	leftVals.forall[ l | val r = rightIter.next; G |= l : r ]
+}
+
+rule EqualModelElement
+	G |= InstanceReferenceValue left : InstanceReferenceValue right
+from {
+	left.referencedInstanceObject == right.referencedInstanceObject
+}
+
+rule Equal
+	G |= PropertyValue left : PropertyValue right
+from {
+	left.sameAs(right)
+	or
+		fail
+			error 'interpreter: property values are not equal'
+			source left
+}
+
+rule CompareNumbers
+	G |> NumberValue left : NumberValue right
+from {
+	G |> left : right ~> var Integer cmp
+	val op = env(G, 'op', Operation)
+	// need b: can't return result of switch
+	val b =
+		switch (op) {
+			case LT: cmp < 0		
+			case LEQ: cmp <= 0
+			case GT: cmp > 0
+			case GEQ: cmp >= 0
+			default: false // to eliminate warning
+		}
+	b
+}
+
+rule CompareNumberRange
+	G |> NumberValue left : RangeValue right
+from {
+	var NumberValue rightNum
+	var op = env(G, 'op', Operation)
+	switch (op) {
+		case LT, case LEQ: { 
+			G |- right.minimum ~> rightNum
+		}
+		case GT, case GEQ: {
+			G |- right.maximum ~> rightNum
+		}
+		default: {
+			// nothing
+		}
+	}
+	G |> left : rightNum 
+}
+
+rule CompareRangeNumber
+	G |>  RangeValue left : NumberValue right
+from {
+	var NumberValue leftNum
+	val op = env(G, 'op', Operation)
+	switch (op) {
+		case LT, case LEQ: { 
+			G |- left.maximum ~> leftNum
+		}
+		case GT, case GEQ: {
+			G |- left.minimum ~> leftNum
+		}
+		default: {
+			// to eliminate warning
+		}
+	}
+	G |> leftNum : right
+}
+
+rule CompareRanges
+	G |> RangeValue left : RangeValue right
+from {
+	var NumberValue leftNum
+	var NumberValue rightNum
+	val op = env(G, 'op', Operation)
+	switch (op) {
+		case LT, case LEQ: { 
+			G |- left.maximum ~> leftNum
+			G |- right.minimum ~> rightNum
+		}
+		case GT, case GEQ: {
+			G |- left.minimum ~> leftNum
+			G |- right.maximum ~> rightNum
+		}
+		default: {
+			// nothing
+		}
+	}
+	G |> leftNum : rightNum
+}
+
+rule CompareToNumber
+	G |> NumberValue left : NumberValue right ~> Integer cmp
+from {
+	cmp = left.compareTo(right)
+}

@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright (c) 2004-2021 Carnegie Mellon University and others. (see Contributors file). 
+All Rights Reserved.
+
+NO WARRANTY. ALL MATERIAL IS FURNISHED ON AN "AS-IS" BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY
+KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE
+OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT
+MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
+
+This program and the accompanying materials are made available under the terms of the Eclipse Public License 2.0
+which is available at https://www.eclipse.org/legal/epl-2.0/
+SPDX-License-Identifier: EPL-2.0
+
+Created, in part, with funding and support from the United States Government. (see Acknowledgments file).
+
+This program includes and/or can make use of certain third party source code, object code, documentation and other
+files ("Third Party Software"). The Third Party Software that is used by this program is dependent upon your system
+configuration. By using this program, You agree to comply with any and all relevant Third Party Software terms and
+conditions contained in any such Third Party Software or separate license file distributed with such Third Party
+Software. The parties who own the Third Party Software ("Third Party Licensors") are intended third party benefici-
+aries to this license with respect to the terms applicable to their Third Party Software. Third Party Software li-
+censes only apply to the Third Party Software and not any other portion of this program or this program as a whole.
+-->
+<?eclipse version="3.2"?>
+<plugin>
+   <extension
+         id="AadlObjectMarker"
+         name="Aadl Model Object Marker"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.problemmarker">
+      </super>
+      <super
+            type="org.eclipse.emf.ecore.diagnostic">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+   <extension
+         id="AadlGotoMarker"
+         name="Goto Model Element Marker"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.osate.aadl2.modelsupport.AadlObjectMarker">
+      </super>
+      <super
+            type="org.eclipse.emf.ecore.diagnostic">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+   <extension
+         id="AadlTextMarker"
+         name="Aadl Text Marker"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.problemmarker">
+      </super>
+      <persistent
+            value="true">
+      </persistent>
+   </extension>
+   <extension
+         id="AadlTextGotoMarker"
+         name="Goto AADL Source Text Marker"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.osate.aadl2.modelsupport.AadlTextMarker">
+      </super>
+      <persistent
+            value="false">
+      </persistent>
+   </extension>
+
+     <extension
+         id="ParseErrorMarker"
+         name="AADL Parse Error Marker"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.osate.aadl2.modelsupport.AadlTextMarker"/>
+      <persistent value="true"/>
+   </extension>
+
+   <extension
+         id="InstantiationObjectMarker"
+         name="Instantiation Marker"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.osate.aadl2.modelsupport.AadlObjectMarker"/>
+      <persistent value="true"/>
+   </extension>
+   
+
+     <extension
+         id="NameResolutionErrorMarker"
+         name="AADL Name Resolution Error Marker"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.osate.aadl2.modelsupport.AadlTextMarker"/>
+      <persistent value="true"/>
+   </extension>
+
+	<!-- adapter for loading aadl2 files -->
+<extension point="org.eclipse.core.runtime.adapters">
+      <factory adaptableType="org.eclipse.core.resources.IFile" class="org.osate.aadl2.modelsupport.resources.ModelLoadingAdapter">
+         <adapter type="org.osate.aadl2.Element" />
+         <adapter type="org.osate.aadl2.ModelUnit" />
+         <adapter type="org.osate.aadl2.instance.InstanceObject" />
+         <adapter type="org.osate.aadl2.instance.SystemInstance" />
+      </factory>
+      <factory adaptableType="org.eclipse.jface.viewers.ISelection" class="org.osate.aadl2.modelsupport.resources.ModelLoadingAdapter">
+         <adapter type="org.osate.aadl2.Element" />
+         <adapter type="org.osate.aadl2.ModelUnit" />
+         <adapter type="org.osate.aadl2.instance.InstanceObject" />
+         <adapter type="org.osate.aadl2.instance.SystemInstance" />
+      </factory>
+</extension>
+
+   <extension
+         point="org.eclipse.core.expressions.propertyTesters">
+      <propertyTester
+            class="org.osate.aadl2.modelsupport.internal.propertytester.EObjectURIWrapperPropertyTester"
+            id="org.osate.aadl2.modelsupport.eObjectURIWrapperPropertyTester"
+            namespace="org.osate.aadl2.modelsupport"
+            properties="wrapperSuperType"
+            type="org.osate.aadl2.modelsupport.EObjectURIWrapper">
+      </propertyTester>
+   </extension>
+</plugin>

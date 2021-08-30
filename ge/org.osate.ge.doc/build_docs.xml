@@ -1,0 +1,123 @@
+<?xml version="1.0"?>
+<!--
+Copyright (c) 2004-2021 Carnegie Mellon University and others. (see Contributors file). 
+All Rights Reserved.
+
+NO WARRANTY. ALL MATERIAL IS FURNISHED ON AN "AS-IS" BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY
+KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE
+OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT
+MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
+
+This program and the accompanying materials are made available under the terms of the Eclipse Public License 2.0
+which is available at https://www.eclipse.org/legal/epl-2.0/
+SPDX-License-Identifier: EPL-2.0
+
+Created, in part, with funding and support from the United States Government. (see Acknowledgments file).
+
+This program includes and/or can make use of certain third party source code, object code, documentation and other
+files ("Third Party Software"). The Third Party Software that is used by this program is dependent upon your system
+configuration. By using this program, You agree to comply with any and all relevant Third Party Software terms and
+conditions contained in any such Third Party Software or separate license file distributed with such Third Party
+Software. The parties who own the Third Party Software ("Third Party Licensors") are intended third party benefici-
+aries to this license with respect to the terms applicable to their Third Party Software. Third Party Software li-
+censes only apply to the Third Party Software and not any other portion of this program or this program as a whole.
+-->
+<project name="build Eclipse Help" default="build-help">
+
+  <description>
+    Used to transform DocBook XML to Eclipse help output
+  </description>
+
+  <!-- Define base properties -->
+  <property name="docs_output.dir" value="docs-gen" />
+
+	<!-- - target: usage -->
+  <target name="usage" description="Prints help">
+<echo message="Use -projecthelp to get a list of the available targets." />
+  </target>
+
+  <!-- - target: clean -->
+  <target name="clean" description="Cleans up generated files.">
+  <delete dir="${docs_output.dir}" />
+  	<!-- Currently disabled.  Enable when building api docs.
+  	<delete dir="api" />
+  	-->
+  </target>
+
+  <target name="build-help" depends="clean, build_docs_eclipse, build_api_docs">
+  </target>
+		
+	<target name="build_docs_eclipse" description="Build Eclipse Help Documentation">
+		<mkdir dir="${docs_output.dir}" />
+
+		<!-- User Guide -->
+		<exec executable="pandoc" dir="./docs/">
+			<arg value="user_guide.md"/>
+			<arg value="--toc"/>
+			<arg value="--number-sections"/>
+	    	<arg value="-s"/>
+			<arg value="--filter"/>
+			<arg value="pandoc-crossref"/>
+	   		<arg value="-f"/>
+	   	    <arg value="markdown"/>
+	   		<arg value="-t"/>
+	   		<arg value="html5"/>
+			<arg value="--css=../css/pandoc.css"/>
+	   		<arg value="-o"/>
+			<arg value="../docs-gen/user_guide.html"/>
+		</exec>
+		
+		<exec executable="pandoc" dir="./docs/">
+			<env key="HTML_FILEPATH" value="docs-gen/user_guide.html"/>
+			<arg value="user_guide.md"/>
+	    	<arg value="-t"/>
+	   		<arg value="../create_toc.lua"/>
+	   		<arg value="-o"/>
+			<arg value="../docs-gen/user_guide_toc.xml"/>
+		</exec>
+		
+		<!-- Developer Guide -->
+		<exec executable="pandoc" dir="./docs/">
+			<arg value="dev_guide.md"/>
+			<arg value="--toc"/>
+			<arg value="--number-sections"/>
+	    	<arg value="-s"/>
+			<arg value="--filter"/>
+			<arg value="pandoc-crossref"/>
+	   		<arg value="-f"/>
+	   	    <arg value="markdown"/>
+	   		<arg value="-t"/>
+	   		<arg value="html5"/>
+			<arg value="--css=../css/pandoc.css"/>
+	   		<arg value="-o"/>
+			<arg value="../docs-gen/dev_guide.html"/>
+		</exec>
+		
+		<exec executable="pandoc" dir="./docs/">
+			<env key="HTML_FILEPATH" value="docs-gen/dev_guide.html"/>
+			<arg value="dev_guide.md"/>
+	    	<arg value="-t"/>
+	   		<arg value="../create_toc.lua"/>
+	   		<arg value="-o"/>
+			<arg value="../docs-gen/dev_guide_toc.xml"/>
+		</exec>
+	</target>
+	
+    <target name="build_api_docs">
+        <javadoc access="public" additionalparam="-notimestamp -Xdoclint:none -tag 'noimplement:a:No Implement:' -tag 'noextend:a:No Extend:' -tag 'noreference:a:No Reference:' -tag 'noinstantiate:a:No Instantiate:' -tag 'nooverride:a:No Override:'" author="true"
+        	destdir="api" 
+        	doctitle="OSATE Graphical Editor API Reference" 
+        	nodeprecated="false" 
+        	nodeprecatedlist="false" 
+        	noindex="false" 
+        	nonavbar="false" 
+        	notree="false" 
+        	packagenames="org.osate.ge,org.osate.ge.aadl2,org.osate.ge.aadl2.ui,org.osate.ge.businessobjecthandling,org.osate.ge.graphics,org.osate.ge.operations,org.osate.ge.palette,org.osate.ge.query,org.osate.ge.referencehandling,org.osate.ge.services,org.osate.ge.ui" 
+        	source="1.8"         	 
+        	sourcepath="..\org.osate.ge\src;..\org.osate.ge.diagram\src" 
+        	splitindex="true" 
+        	use="true" 
+        	version="true"                
+        />
+    </target>
+</project> 

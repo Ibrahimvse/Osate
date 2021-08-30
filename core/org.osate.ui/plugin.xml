@@ -1,0 +1,1739 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright (c) 2004-2021 Carnegie Mellon University and others. (see Contributors file). 
+All Rights Reserved.
+
+NO WARRANTY. ALL MATERIAL IS FURNISHED ON AN "AS-IS" BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY
+KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE
+OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT
+MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
+
+This program and the accompanying materials are made available under the terms of the Eclipse Public License 2.0
+which is available at https://www.eclipse.org/legal/epl-2.0/
+SPDX-License-Identifier: EPL-2.0
+
+Created, in part, with funding and support from the United States Government. (see Acknowledgments file).
+
+This program includes and/or can make use of certain third party source code, object code, documentation and other
+files ("Third Party Software"). The Third Party Software that is used by this program is dependent upon your system
+configuration. By using this program, You agree to comply with any and all relevant Third Party Software terms and
+conditions contained in any such Third Party Software or separate license file distributed with such Third Party
+Software. The parties who own the Third Party Software ("Third Party Licensors") are intended third party benefici-
+aries to this license with respect to the terms applicable to their Third Party Software. Third Party Software li-
+censes only apply to the Third Party Software and not any other portion of this program or this program as a whole.
+-->
+<?eclipse version="3.0"?>
+<plugin>
+   <extension-point id="examples" name="OSATE Examples" schema="schema/examples.exsd"/>
+
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            id="org.osate.internal.ui.preferences.OsatePreferencePage"
+            name="OSATE"
+            class="org.osate.ui.preferences.BlankPreferencePage">
+      </page>
+      <page
+      		id="org.osate.ui.preferences.OsateAnalysisPage"
+      		category="org.osate.internal.ui.preferences.OsatePreferencePage"
+      		name="Analysis"
+      		class="org.osate.ui.preferences.BlankPreferencePage">
+      </page>
+      <page
+      		id="org.osate.ui.preferences.OsateInstantiationPage"
+      		category="org.osate.internal.ui.preferences.OsatePreferencePage"
+      		name="Instantiation"
+      		class="org.osate.ui.internal.preferences.InstantiationPreferencePage">
+      </page>
+      <page
+      		id="org.osate.ui.preferences.OsateContributedResourcesPage"
+      		category="org.osate.internal.ui.preferences.OsatePreferencePage"
+      		name="Contributed Resources"
+      		class="org.osate.internal.ui.preferences.ContributedResourcesPreferencePage">
+      </page>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.propertyPages">
+      <page
+            class="org.osate.ui.properties.BlankPropertyPage"
+            id="org.osate.ui.properties.OSATE"
+            name="OSATE">
+         <enabledWhen>
+            <adapt type="org.eclipse.core.resources.IProject">
+               <test property="org.eclipse.core.resources.projectNature" 
+                     value="org.osate.core.aadlnature"/>
+            </adapt>         
+         </enabledWhen>
+      </page>
+      <page
+            class="org.osate.ui.internal.properties.InstantiationPropertyPage"
+            category="org.osate.ui.properties.OSATE"
+            id="org.osate.internal.ui.properties.InstantiationPropertyPage"
+            name="Instantiation">
+         <enabledWhen>
+            <adapt type="org.eclipse.core.resources.IProject">
+               <test property="org.eclipse.core.resources.projectNature" 
+                     value="org.osate.core.aadlnature"/>
+            </adapt>         
+         </enabledWhen>
+      </page>
+   </extension>
+   
+   <extension
+         point="org.eclipse.search.searchPages">
+      <page
+            class="org.osate.ui.search.AadlSearchPage"
+            id="org.osate.ui.search.AadlSearchPage"
+            extensions="aadl:1"
+            label="AADL Search"
+            icon="icons/aadl.gif" /> 
+   </extension>
+
+   <extension point="org.eclipse.search.searchResultViewPages">
+       <viewPage
+               class="org.osate.ui.search.AadlSearchResultPage"
+               id="org.osate.ui.search.AadlSearchResultPage"
+               label="AADL Search"
+               searchResultClass="org.osate.search.AadlSearchResult" />
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <category
+            id="org.osate.Wizard.category.ID"
+            name="%_Aadl_Wizard_category">
+      </category>
+      <category
+            id="org.osate.Wizard.category.examples"
+            name="AADL Examples"
+            parentCategory="org.eclipse.ui.Examples">
+      </category>
+      <wizard
+            id="org.osate.ui.wizards.AadlProjectWizardID"
+            name="%_UI_AadlProjectWizard_label"
+            icon="icons/new_aadl_project.gif"
+            category="org.osate.Wizard.category.ID"
+            class="org.osate.ui.wizards.AadlProjectWizard"
+            preferredPerspectives="org.osate.ui.perspective.AadlPerspective"
+            finalPerspective="org.osate.ui.perspective.AadlPerspective"
+            project="true">
+         <description>
+            %_UI_AadlProjectWizard_description
+         </description>
+         <selection
+               class="org.eclipse.core.resources.IResource">
+         </selection>
+      </wizard>
+      <wizard
+            id="org.osate.ui.wizards.OsateExampleWizardID"
+            name="%_UI_OsateExampleWizard_label"
+            icon="icons/new_aadl_project.gif"
+            category="org.osate.Wizard.category.ID"
+            class="org.osate.ui.wizards.OsateExampleWizard"
+            preferredPerspectives="org.osate.ui.perspective.AadlPerspective"
+            finalPerspective="org.osate.ui.perspective.AadlPerspective"
+            project="true">
+         <description>
+            %_UI_OsateExampleWizard_description
+         </description>
+         <selection
+               class="org.eclipse.core.resources.IResource">
+         </selection>
+      </wizard>
+      <wizard
+            id="org.osate.ui.NewAadlPackageWizard"
+            name="AADL Package"
+            icon="icons/new_package.gif"
+            category="org.osate.Wizard.category.ID"
+            class="org.osate.ui.wizards.NewAadlPackageWizard">
+         <description>
+            Create a new AADL package
+         </description>
+         <selection
+               class="org.eclipse.core.resources.IResource">
+         </selection>
+      </wizard>
+      <wizard
+            id="org.osate.ui.NewPropertySetWizard"
+            name="AADL Property Set"
+            icon="icons/new_ps.gif"
+            category="org.osate.Wizard.category.ID"
+            class="org.osate.ui.wizards.NewPropertySetWizard">
+         <description>
+            Create a new AADL property set
+         </description>
+         <selection
+               class="org.eclipse.core.resources.IResource">
+         </selection>
+      </wizard>
+   </extension>
+
+   <extension
+         id="UnparseObjectMarker"
+         name="Unparse Marker"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.osate.aadl2.modelsupport.AadlObjectMarker"/>
+      <persistent value="true"/>
+   </extension>
+
+   <extension
+         id="XMLErrorMarker"
+         name="XML Read Error Marker"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.osate.aadl2.modelsupport.AadlObjectMarker"/>
+      <persistent value="true"/>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.views">
+      <category
+      		id="aadl.view_category"
+      		name="%aadl_view_category.label"/>
+      <view
+            category="aadl.view_category"
+            class="org.eclipse.ui.navigator.resources.ProjectExplorer"
+            icon="icons/aadlNav.gif"
+            id="org.osate.ui.navigator.AadlNavigator"
+            name="AADL Navigator"/>
+      <view
+            id="org.osate.ui.projectdependencyvisualization"
+            name="Project Dependency Visualization"
+            category="aadl.view_category"
+            class="org.osate.ui.dependencyvisualization.ProjectDependencyVisualizationView"
+            icon="icons/project.png">
+      </view>
+      <view
+            id="org.osate.ui.modelunitdependencyvisualization"
+            name="Package and Property Set Dependency Visualization"
+            category="aadl.view_category"
+            class="org.osate.ui.dependencyvisualization.ModelUnitDependencyVisualizationView"
+            icon="icons/package.gif">
+      </view>
+   </extension>
+   
+	<extension
+         point="org.eclipse.ui.navigator.viewer">
+		<viewerContentBinding 
+            viewerId="org.osate.ui.navigator.AadlNavigator">
+			<includes>
+   				<contentExtension pattern="org.eclipse.ui.navigator.resources.workingSets" />
+				<contentExtension pattern="org.eclipse.ui.navigator.resourceContent" />     	      
+				<contentExtension pattern="org.eclipse.ui.navigator.resources.filters.*"/>
+    			<contentExtension pattern="org.osate.ui.navigator.contributedAadl" />
+			    <contentExtension pattern="org.osate.ui.navigator.aadlProjectDependencies" />
+    			<contentExtension pattern="org.osate.ui.navigator.aadlFileContent" />
+			    <contentExtension pattern="org.osate.ui.navigator.menuActions" />
+				<contentExtension pattern="org.osate.ui.navigator.AadlNavigatorLinkHelper" />
+    <contentExtension
+          pattern="org.osate.ui.navigator.viewerRefresher">
+    </contentExtension>
+			</includes>
+		</viewerContentBinding>
+  		<viewerActionBinding
+        	viewerId="org.osate.ui.navigator.AadlNavigator">
+     		<includes>
+     			<actionExtension pattern="org.eclipse.ui.navigator.resources.*" />
+     			<actionExtension pattern="org.osate.ui.navigator.*" />
+     		</includes>
+	  </viewerActionBinding>
+   </extension>
+
+	<extension
+         point="org.eclipse.ui.navigator.navigatorContent">
+      <navigatorContent
+            activeByDefault="true"
+            contentProvider="org.osate.ui.navigator.AadlContributionContentProvider"
+            id="org.osate.ui.navigator.contributedAadl"
+            labelProvider="org.osate.ui.navigator.AadlContributionLabelProvider"
+            name="Contributed AADL Packages and Property Sets">
+         <enablement>
+            <instanceof
+                  value="org.eclipse.core.resources.IProject">
+            </instanceof>
+         </enablement>
+         <commonSorter
+               class="org.osate.ui.navigator.AadlContributionSorter">
+         </commonSorter>
+      </navigatorContent>
+      <navigatorContent
+            activeByDefault="true"
+            contentProvider="org.osate.ui.navigator.AadlProjectDependenciesContentProvider"
+            id="org.osate.ui.navigator.aadlProjectDependencies"
+            labelProvider="org.osate.ui.navigator.AadlProjectDependenciesLabelProvider"
+            name="AADL Project Dependencies">
+         <enablement>
+         	<or>
+            	<instanceof value="org.eclipse.core.resources.IProject"/>
+            	<instanceof value="org.osate.ui.navigator.VirtualProjectDependencies"/>
+            </or>
+         </enablement>
+         <commonSorter
+               class="org.osate.ui.navigator.AadlProjectDependenciesSorter">
+         </commonSorter>
+      </navigatorContent>
+      <navigatorContent
+            activeByDefault="true"
+            contentProvider="org.osate.ui.navigator.AadlElementContentProvider"
+            id="org.osate.ui.navigator.aadlFileContent"
+            labelProvider="org.osate.ui.navigator.AadlElementLabelProvider"
+            name="Expanded Content of AADL Files">
+         <enablement>
+            <or>
+               <and>
+                  <instanceof
+                        value="org.eclipse.core.resources.IFile">
+                  </instanceof>
+                  <and>
+                     <or>
+                        <test
+                              property="org.eclipse.core.resources.extension"
+                              value="aadl">
+                        </test>
+                        <test
+                              property="org.eclipse.core.resources.contentTypeId"
+                              value="org.osate.core.instanceModelFile">
+                        </test>
+                     </or>
+                  </and>
+               </and>
+               <instanceof
+                     value="org.osate.xtext.aadl2.ui.resource.ContributedAadlStorage">
+               </instanceof>
+            </or>
+          </enablement>
+         <commonSorter
+               class="org.osate.ui.navigator.AadlElementSorter">
+         </commonSorter>
+      </navigatorContent>
+      <navigatorContent
+            activeByDefault="true"
+            id="org.osate.ui.navigator.menuActions"
+            name="AADL Navigator Menu Actions"
+            priority="lowest"
+            sortOnly="true">
+         <enablement>
+            <instanceof
+                  value="java.lang.Object">
+            </instanceof>
+         </enablement>
+         <commonWizard
+               type="new"
+               wizardId="org.osate.ui.NewPropertySetWizard">
+            <enablement>
+               <adapt
+                     type="org.eclipse.core.resources.IResource">
+               </adapt>
+            </enablement>
+         </commonWizard>
+         <commonWizard
+               type="new"
+               wizardId="org.osate.ui.NewAadlPackageWizard">
+            <enablement>
+               <adapt
+                     type="org.eclipse.core.resources.IResource">
+               </adapt>
+            </enablement>
+         </commonWizard>
+         <actionProvider
+               class="org.osate.ui.navigator.NewAadlProjectActionProvider"
+               id="org.osate.ui.navigator.newAadlProject">
+         </actionProvider>
+      </navigatorContent>
+      <actionProvider
+            class="org.osate.ui.navigator.AadlNavigatorActionProvider"
+            id="org.osate.ui.navigator.openContributedAndDeclarativeObject">
+			<enablement>
+			    <or>
+			        <instanceof value="org.osate.xtext.aadl2.ui.resource.ContributedAadlStorage" />
+			        <instanceof value="org.osate.aadl2.modelsupport.EObjectURIWrapper" />
+			    </or>
+         </enablement>
+      </actionProvider>
+      <actionProvider
+            class="org.osate.ui.navigator.AadlProjectDependenciesActionProvider"
+            id="org.osate.ui.navigator.editDependencies">
+         <enablement>
+        	 <or>
+		         <and>
+		            <instanceof value="org.eclipse.core.resources.IProject" />
+		            <test property="org.eclipse.core.resources.open" />
+		            <test
+		                  property="org.eclipse.core.resources.projectNature"
+		                  value="org.osate.core.aadlnature" />
+		         </and>
+		         
+		         <instanceof value="org.osate.ui.navigator.VirtualProjectDependencies" />
+		         <instanceof value="org.osate.ui.navigator.VirtualProjectNode" />
+		     </or>
+         </enablement>
+      </actionProvider>
+      <navigatorContent
+            activeByDefault="true"
+            contentProvider="org.osate.ui.navigator.ViewerRefresher"
+            id="org.osate.ui.navigator.viewerRefresher"
+            labelProvider="org.osate.ui.navigator.NullLabelProvider"
+            name="Viewer Refresher"
+            priority="lowest">
+         <enablement>
+            <instanceof
+                  value="org.eclipse.core.resources.IProject">
+            </instanceof>
+         </enablement>
+      </navigatorContent>
+   </extension>
+   
+   <extension 
+        point="org.eclipse.ui.perspectives"> 
+        <perspective 
+        	id="org.osate.ui.perspective.AadlPerspective"
+            name="AADL" 
+            class="org.osate.ui.perspective.AadlPerspectiveFactory" 
+            icon="icons/aadl.gif"> 
+        </perspective> 
+    </extension>
+    
+    <extension
+    	point="org.eclipse.ui.perspectiveExtensions">
+    	<perspectiveExtension
+    		targetID="org.eclipse.ui.resourcePerspective">
+    		<perspectiveShortcut
+    			id="org.osate.ui.perspective.AadlPerspective"/>
+    	</perspectiveExtension>
+    	<perspectiveExtension
+    		targetID="org.eclipse.team.cvs.ui.cvsPerspective">
+    		<perspectiveShortcut
+    			id="org.osate.ui.perspective.AadlPerspective"/>
+    	</perspectiveExtension>
+    	<perspectiveExtension
+    		targetID="org.eclipse.team.ui.TeamSynchronizingPerspective">
+    		<perspectiveShortcut
+    			id="org.osate.ui.perspective.AadlPerspective"/>
+    	</perspectiveExtension>
+    </extension>
+    
+    <!--extension
+       point="org.eclipse.ui.exportWizards">
+       <wizard
+       	  id="org.osate.ui.wizards.exportTextWizard"
+       	  name="Aadl Text"
+       	  class="org.osate.ui.wizards.AadlTextExportWizard"
+       	  icon="icons/makeaadltext.gif">
+       	  <description>
+       	     Exports an XML AADL Model to AADL Text.
+       	  </description>
+       </wizard>
+    </extension-->
+   <extension
+         point="org.eclipse.ui.exportWizards">
+      <wizard
+            category="org.eclipse.ui.Basic"
+            class="org.osate.ui.wizards.workingsets.WorkingSetExportWizard"
+            icon="icons/workingsets/workingSets2.gif"
+            id="org.osate.ui.workingSetExportWizard"
+            name="Working Sets">
+         <description>
+            Exports working sets.
+         </description>
+      </wizard>
+   </extension>
+   <extension
+         point="org.eclipse.ui.importWizards">
+      <wizard
+            category="org.eclipse.ui.Basic"
+            class="org.osate.ui.wizards.workingsets.WorkingSetImportWizard"
+            icon="icons/workingsets/workingSets.gif"
+            id="org.osate.ui.workingSetImportWizard"
+            name="Working Sets">
+         <description>
+            Imports working sets.
+         </description>
+      </wizard>
+   </extension>
+   <extension
+         id="org.osate.views"
+         point="org.eclipse.ui.views">
+      <category
+      		id="aadl.view_category"
+      		name="%aadl_view_category.label"/>
+      <view
+            category="aadl.view_category"
+            class="org.osate.ui.views.LoggerView"
+            icon="icons/aadl.gif"
+            id="org.osate.ui.logger_view"
+            name="%osate_logger_view.label">
+      </view>
+      <view
+            category="aadl.view_category"
+            class="org.osate.ui.views.ClassifierInfoView"
+            icon="icons/aadl.gif"
+            id="org.osate.ui.classifier_info_view"
+            name="%osate_classifier_info_view.label">
+      </view>
+   </extension>
+   
+    <extension
+          point="org.eclipse.ui.navigator.linkHelper">
+       <linkHelper
+             class="org.osate.ui.navigator.AadlNavigatorLinkHelper"
+             id="org.osate.ui.navigator.AadlNavigatorLinkHelper">
+          <selectionEnablement>
+          <or>
+             <instanceof value="org.eclipse.core.resources.IFile"/>
+             <instanceof value="org.osate.xtext.aadl2.ui.resource.ContributedAadlStorage"/>
+             <instanceof value="org.osate.aadl2.modelsupport.EObjectURIWrapper"/>
+           </or>
+          </selectionEnablement>
+          <editorInputEnablement>
+          <or>
+             <instanceof value="org.eclipse.ui.IFileEditorInput"/>
+             <instanceof
+                   value="org.osate.xtext.aadl2.ui.editor.ContributedAadlEditorInput">
+             </instanceof>
+           </or>
+          </editorInputEnablement>
+       </linkHelper>
+    </extension>
+
+     <extension
+        point="org.eclipse.ui.newWizards">
+     <wizard
+           category="org.eclipse.ui.Examples/org.osate.Wizard.category.examples"
+           class="org.osate.ui.wizards.OsateExampleWizard"
+           icon="icons/aadl.gif"
+           id="org.osate.wizard.examples"
+           name="AADL Examples"
+           project="true">
+     </wizard>
+     </extension>
+
+    <extension point="org.eclipse.core.expressions.definitions">
+       <definition id="org.osate.is_aadl_project_propertyset">
+          <or>
+             <adapt type="org.eclipse.core.resources.IResource">
+                <test property="org.eclipse.core.resources.name"
+                     value="AADL_Project.aadl">
+                </test>
+             </adapt>
+             <adapt
+                   type="org.osate.xtext.aadl2.ui.resource.ContributedAadlStorage">
+                <test
+                      property="org.osate.ui.name"
+                      value="AADL_Project.aadl"
+                      forcePluginActivation="true">
+                </test>
+             </adapt>
+          </or>
+       </definition>
+
+       <!-- open AADL project or any closed project -->
+       <definition id="org.osate.ui.definition.isAADLProject">
+          <and>
+             <instanceof value="org.eclipse.core.resources.IProject" />
+             <or>
+                <test
+                    property="org.eclipse.core.resources.projectNature"
+                    value="org.osate.core.aadlnature" />
+                <not>
+                   <test property="org.eclipse.core.resources.open" />
+                </not>
+             </or>
+          </and>
+       </definition>
+
+       <!-- folder in an AADL project -->
+       <definition id="org.osate.ui.definition.isAADLFolder">
+          <and>
+             <instanceof value="org.eclipse.core.resources.IFolder" />
+             <test
+                   property="org.eclipse.core.resources.projectNature"
+                   value="org.osate.core.aadlnature" />
+             </and>
+       </definition>
+
+       <!-- Instance model file -->
+       <definition id="org.osate.ui.definition.isInstanceFile">
+          <adapt
+                type="org.eclipse.core.resources.IFile">
+             <test
+                   property="org.eclipse.core.resources.contentTypeId"
+                   value="org.osate.core.instanceModelFile">
+             </test>
+          </adapt>
+       </definition>
+
+       <!-- Declarative model file: AADL Package -->
+       <definition id="org.osate.ui.definition.isPackageFile">
+          <adapt
+                type="org.eclipse.core.resources.IFile">
+             <test property="org.osate.ui.aadlPackage" forcePluginActivation="true" />
+          </adapt>
+       </definition>
+
+       <!-- Declarative model file: AADL Property Set -->
+       <definition id="org.osate.ui.definition.isPropertySetFile">
+          <adapt
+                type="org.eclipse.core.resources.IFile">
+             <test property="org.osate.ui.aadlPropertySet" forcePluginActivation="true" />
+          </adapt>
+       </definition>
+
+       <!-- Instantiatable ComponentImplementation as an EObjectURIWrapper (navigator view) -->
+       <definition id="org.osate.ui.definition.isInstantiatableEObjectURIWrapper">
+          <adapt
+                type="org.osate.aadl2.modelsupport.EObjectURIWrapper">
+             <and>
+                <test
+                      property="org.osate.aadl2.modelsupport.wrapperSuperType"
+                      value="ComponentImplementation"
+                      forcePluginActivation="true">
+                </test>
+                <not>
+                   <test
+                         property="org.osate.aadl2.modelsupport.wrapperSuperType"
+                         value="SubprogramImplementation"
+                         forcePluginActivation="true">
+                   </test>
+                </not>
+                <not>
+                   <test
+                         property="org.osate.aadl2.modelsupport.wrapperSuperType"
+                         value="SubprogramGroupImplementation"
+                         forcePluginActivation="true">
+                    </test>
+                 </not>
+              </and>
+           </adapt>
+       </definition>
+
+       <!-- Instantiatable ComponentImplementation as an EObjectNode (aadl outline view) -->
+       <definition id="org.osate.ui.definition.isInstantiatableEObjectNode">
+          <adapt
+                type="org.eclipse.xtext.ui.editor.outline.impl.EObjectNode">
+             <and>
+                <test
+                      property="org.osate.ui.superType"
+                      value="ComponentImplementation"
+                      forcePluginActivation="true">
+                </test>
+                <not>
+                   <test
+                         property="org.osate.ui.superType"
+                         value="SubprogramImplementation"
+                         forcePluginActivation="true">
+                   </test>
+                </not>
+                <not>
+                   <test
+                         property="org.osate.ui.superType"
+                         value="SubprogramGroupImplementation"
+                         forcePluginActivation="true">
+                   </test>
+                </not>
+             </and>
+          </adapt>
+       </definition>
+
+       <!-- A SystemInstance (instance editor and instance outline view) -->
+       <definition id="org.osate.ui.definition.isSystemInstance">
+          <instanceof value="org.osate.aadl2.instance.SystemInstance" />
+       </definition>
+
+       <!-- An Eclipse working set (aadl navigator) -->
+       <definition id="org.osate.ui.definition.isWorkingSet">
+          <instanceof value="org.eclipse.ui.IWorkingSet" />
+       </definition>
+       
+       <!-- A working set or open project -->
+       <definition id="org.osate.ui.definition.isWorkingSetOrOpenProject">
+          <or>
+             <adapt
+                   type="org.eclipse.ui.IWorkingSet">
+             </adapt>
+             <adapt
+                   type="org.eclipse.core.resources.IProject">
+                <test
+                      property="org.eclipse.core.resources.open">
+                </test>
+             </adapt>
+          </or>
+       </definition>
+       
+       <!-- For visibleWhen: Be visible when there are 1 or more selected objects and AT LEAST ONE of them
+            is a working set, AADL Project, folder in an AADL Project, an AAXL file, or an instantiatable
+            component implementation. -->
+       <definition id="org.osate.ui.definition.instanceAnalysisCommandVisibility">
+          <with
+                variable="selection">
+             <and>
+                <count
+                      value="+">
+                </count>
+                <iterate
+                      ifEmpty="false"
+                      operator="or">
+                   <or>
+                      <reference definitionId="org.osate.ui.definition.isWorkingSet"/>
+                      <reference definitionId="org.osate.ui.definition.isAADLProject"/>
+                      <reference definitionId="org.osate.ui.definition.isAADLFolder"/>
+                      <reference definitionId="org.osate.ui.definition.isInstanceFile"/>
+                      <reference definitionId="org.osate.ui.definition.isInstantiatableEObjectURIWrapper"/>
+                      <reference definitionId="org.osate.ui.definition.isInstantiatableEObjectNode"/>
+                      <reference definitionId="org.osate.ui.definition.isSystemInstance"/>
+                   </or>
+                </iterate>
+             </and>
+          </with>
+       </definition> 
+
+       <!-- For enabledWhen: Be enabled when there are 1 or more selected objects and ALL OF THEM are one of
+            working set, AADL Project, folder in an AADL Project, an AAXL file, or an instantiatable
+            component implementation. -->
+       <definition id="org.osate.ui.definition.instanceAnalysisCommandEnabled">
+          <with
+                variable="selection">
+             <and>
+                <count
+                      value="+">
+                </count>
+                <iterate
+                      ifEmpty="false"
+                      operator="and">
+                   <or>
+                      <reference definitionId="org.osate.ui.definition.isWorkingSet"/>
+                      <reference definitionId="org.osate.ui.definition.isAADLProject"/>
+                      <reference definitionId="org.osate.ui.definition.isAADLFolder"/>
+                      <reference definitionId="org.osate.ui.definition.isInstanceFile"/>
+                      <reference definitionId="org.osate.ui.definition.isInstantiatableEObjectURIWrapper"/>
+                      <reference definitionId="org.osate.ui.definition.isInstantiatableEObjectNode"/>
+                      <reference definitionId="org.osate.ui.definition.isSystemInstance"/>
+                   </or>
+                </iterate>
+             </and>
+          </with>
+       </definition> 
+       
+       <!-- For enabledWhen: Be enabled when we are in the AADL Perspective -->
+       <definition id="org.osate.ui.definition.inAadlPerspective">
+          <with
+                variable="activeWorkbenchWindow.activePerspective">
+             <equals
+                   value="org.osate.ui.perspective.AadlPerspective">
+             </equals>
+          </with>
+       </definition>
+
+      <!-- LEGACY: should become obsolete when we update all the command handlers -->
+      <definition id="org.osate.ui.definition.isInstanceFileOrComponentInstanceSelected">
+         <or>
+            <reference
+                  definitionId="org.osate.core.isInstanceFileSelected">
+            </reference>
+            <with
+                  variable="selection">
+               <and>
+                  <count
+                        value="1">
+                  </count>
+                  <iterate>
+                     <or>
+                        <instanceof
+                              value="org.osate.aadl2.instance.ComponentInstance">
+                        </instanceof>
+                        <adapt
+                              type="org.osate.aadl2.modelsupport.EObjectURIWrapper">
+                           <test
+                                 property="org.osate.aadl2.modelsupport.wrapperSuperType"
+                                 value="ComponentInstance"
+                                 forcePluginActivation="true">
+                           </test>
+                        </adapt>
+                     </or>
+                  </iterate>
+               </and>
+            </with>
+         </or>
+      </definition>
+
+      <!-- LEGACY: should become obsolete when we update all the command handlers -->
+      <definition id="org.osate.ui.definition.isInstanceFileOrSystemInstanceSelected">
+         <or>
+            <reference
+                  definitionId="org.osate.core.isInstanceFileSelected">
+            </reference>
+            <with
+                  variable="selection">
+               <and>
+                  <count
+                        value="1">
+                  </count>
+                  <iterate>
+                     <or>
+                        <instanceof
+                              value="org.osate.aadl2.instance.SystemInstance">
+                        </instanceof>
+                        <adapt
+                              type="org.osate.aadl2.modelsupport.EObjectURIWrapper">
+                           <test
+                                 property="org.osate.aadl2.modelsupport.wrapperSuperType"
+                                 value="SystemInstance"
+                                 forcePluginActivation="true">
+                           </test>
+                        </adapt>
+                     </or>
+                  </iterate>
+               </and>
+            </with>
+         </or>
+      </definition>
+    </extension>
+    <extension
+          point="org.eclipse.ui.menus">
+       <menuContribution
+		     allPopups="false"
+             locationURI="popup:#TextEditorContext">
+          <command commandId="org.osate.ui.showInClassifierInfoView"
+                style="push">
+             <visibleWhen checkEnabled="false">
+                <reference
+                       definitionId="org.osate.xtext.aadl2.Aadl2.Editor.opened">
+                </reference>
+             </visibleWhen>
+          </command>
+       </menuContribution> 
+
+       <!-- Add to the instance model editor and the instance model outline view context menus -->
+       <menuContribution
+             locationURI="popup:org.osate.aadl2.presentation.Aadl2ModelEditorID">
+          <command
+                commandId="org.osate.ui.reinstantiate">
+	          <visibleWhen>
+	             <with
+	                   variable="selection">
+	                <and>
+	                   <count
+	                         value="+">
+	                   </count>
+	                   <iterate operator="or">
+	                      <reference definitionId="org.osate.ui.definition.isSystemInstance"/>
+	                   </iterate>
+	                </and>
+	             </with>
+	          </visibleWhen>
+          </command>
+          <menu
+                id="org.osate.ui.analysesInstanceOutlinePopup"
+                label="Analyses">
+             <menu
+                   id="org.osate.ui.semanticChecksInstanceOutlinePopup"
+                   label="Semantic Checks">
+                <separator
+                      name="code_generation">
+                </separator>
+                <separator
+                      name="third_party">
+                </separator>
+             </menu>
+             <separator
+                   name="third_party">
+             </separator>
+          </menu>
+       </menuContribution>
+   
+       <menuContribution
+             locationURI="popup:org.osate.xtext.aadl2.ui.outline?after=additions">
+          <separator
+                name="osate_begin"
+                visible="true">
+          </separator>
+          <command
+                commandId="org.osate.ui.showInClassifierInfoView">
+             <visibleWhen
+                   checkEnabled="true">
+             </visibleWhen>
+          </command>
+          <command
+                commandId="org.osate.ui.instantiate">
+	          <visibleWhen>
+	             <with
+	                   variable="selection">
+	                <and>
+	                   <count
+	                         value="+">
+	                   </count>
+	                   <iterate operator="or">
+	                      <reference definitionId="org.osate.ui.definition.isInstantiatableEObjectNode" />
+	                   </iterate>
+	                </and>
+	             </with>
+	          </visibleWhen>
+          </command>
+          <menu
+                id="org.osate.ui.analysesOutlinePopup"
+                label="Analyses">
+             <menu
+                   id="org.osate.ui.semanticChecksOutlinePopup"
+                   label="Semantic Checks">
+                <separator
+                      name="code_generation">
+                </separator>
+                <separator
+                      name="third_party">
+                </separator>
+             </menu>
+             <separator
+                   name="third_party">
+             </separator>
+          </menu>
+          <menu
+                id="org.osate.ui.ocarinaOutlinePopup"
+                label="Ocarina">
+             <separator
+                   name="core">
+             </separator>
+             <separator
+                   name="third_party">
+             </separator>
+          </menu>
+          <separator
+                name="osate_end"
+                visible="true">
+          </separator>
+       </menuContribution>
+       <menuContribution
+             locationURI="popup:org.osate.ui.navigator.AadlNavigator?after=additions">
+          <separator
+                name="osate_begin"
+                visible="true">
+          </separator>
+          <command
+                commandId="org.osate.ui.showInClassifierInfoView">
+             <visibleWhen
+                   checkEnabled="true">
+             </visibleWhen>
+          </command>
+          <command
+                commandId="org.osate.ui.instantiate">
+	          <visibleWhen>
+	             <with
+	                   variable="selection">
+	                <and>
+	                   <count
+	                         value="+">
+	                   </count>
+	                   <iterate
+	                   		operator="or">
+	                     <or>
+	                        <reference definitionId="org.osate.ui.definition.isInstantiatableEObjectURIWrapper" />
+	                        <reference definitionId="org.osate.ui.definition.isPackageFile" />
+                         </or>
+	                   </iterate>
+	                </and>
+	             </with>
+	          </visibleWhen>
+          </command>
+          <command
+                commandId="org.osate.ui.reinstantiate">
+             <visibleWhen>
+	             <with
+	                   variable="selection">
+	                <and>
+	                   <count
+	                         value="+">
+	                   </count>
+	                   <iterate
+	                         ifEmpty="false"
+	                         operator="or">
+	                      <or>
+                             <reference definitionId="org.osate.ui.definition.isWorkingSet"/>
+   	                         <reference definitionId="org.osate.ui.definition.isAADLProject" />
+  	                         <reference definitionId="org.osate.ui.definition.isAADLFolder" />
+  	                         <reference definitionId="org.osate.ui.definition.isInstanceFile" />
+	                      </or>
+	                   </iterate>
+	                </and>
+	             </with>
+             </visibleWhen>
+          </command>
+          <command
+                commandId="org.osate.ui.visualizeProjectDependencies">
+             <visibleWhen
+                   checkEnabled="true">
+             </visibleWhen>
+          </command>
+          <command
+                commandId="org.osate.ui.visualizeModelUnitDependencies">
+             <visibleWhen
+                   checkEnabled="true">
+             </visibleWhen>
+          </command>
+          <menu
+                id="org.osate.ui.analysesNavigatorPopup"
+                label="Analyses">
+             <menu
+                   id="org.osate.ui.budgetNavigatorPopup"
+                   label="Budget">
+                <separator
+                      name="core">
+                </separator>
+                <separator
+                      name="third_party">
+                </separator>
+             </menu>
+             <menu
+                   id="org.osate.ui.semanticChecksNavigatorPopup"
+                   label="Semantic Checks">
+                <separator
+                      name="core">
+                </separator>
+                <separator
+                      name="third_party">
+                </separator>
+             </menu>
+             <menu
+                   id="org.osate.ui.timingNavigatorPopup"
+                   label="Timing">
+                <separator
+                      name="core">
+                </separator>
+                <separator
+                      name="third_party">
+                </separator>
+             </menu>
+             <menu
+                   id="org.osate.ui.safetyNavigatorPopup"
+                   label="Safety">
+                <separator
+                      name="core">
+                </separator>
+                <separator
+                      name="third_party">
+                </separator>
+             </menu>
+             <separator
+                   name="third_party">
+             </separator>
+          </menu>
+          <menu
+                id="org.osate.ui.reportGenerationNavigatorPopup"
+                label="Report Generation">
+             <separator
+                   name="core">
+             </separator>
+             <separator
+                   name="third_party">
+             </separator>
+          </menu>
+          <separator
+                name="osate_end"
+                visible="true">
+          </separator>
+       </menuContribution>
+       <menuContribution
+             allPopups="false"
+             locationURI="popup:org.eclipse.ui.projectConfigure?after=additions">
+          <command
+                commandId="org.osate.ui.conversion"
+                label="%RemoveAADLNature.label"
+                style="push">
+             <visibleWhen>
+                <with
+                      variable="selection">
+                   <and>
+                      <count
+                            value="1">
+                      </count>
+                      <iterate>
+                         <and>
+                            <instanceof
+                                  value="org.eclipse.core.resources.IProject">
+                            </instanceof>
+                            <test
+                                  property="org.eclipse.core.resources.open">
+                            </test>
+                            <test
+                                  property="org.eclipse.core.resources.projectNature"
+                                  value="org.osate.core.aadlnature">
+                            </test>
+                         </and>
+                      </iterate>
+                   </and>
+                </with>
+             </visibleWhen>
+          </command>
+          <command
+                commandId="org.osate.ui.conversion"
+                label="%EnableAADLNature.label">
+             <visibleWhen>
+                <with
+                      variable="selection">
+                   <and>
+                      <count
+                            value="1">
+                      </count>
+                      <iterate>
+                         <and>
+                            <instanceof
+                                  value="org.eclipse.core.resources.IProject">
+                            </instanceof>
+                            <test
+                                  property="org.eclipse.core.resources.open">
+                            </test>
+                            <not>
+                               <test
+                                     property="org.eclipse.core.resources.projectNature"
+                                     value="org.osate.core.aadlnature">
+                               </test>
+                            </not>
+                         </and>
+                      </iterate>
+                   </and>
+                </with>
+             </visibleWhen>
+          </command>
+       </menuContribution>
+       <menuContribution
+             locationURI="menu:org.eclipse.ui.main.menu?after=org.eclipse.ui.run">
+          <menu
+                id="org.osate.ui.osateMenu"
+                label="OSATE">
+             <visibleWhen
+                   checkEnabled="false">
+               <reference definitionId="org.osate.ui.definition.inAadlPerspective"/>
+             </visibleWhen>
+             <menu
+                   id="org.osate.ui.openWorkflowMenu"
+                   label="Open Workflow">
+                <separator
+                      name="core">
+                </separator>
+                <separator
+                      name="third_party">
+                </separator>
+             </menu>
+             <menu
+                   id="org.osate.ui.importExportMenu"
+                   label="Import/Export">
+                <separator
+                      name="core">
+                </separator>
+                <separator
+                      name="third_party">
+                </separator>
+             </menu>
+             <menu
+                   id="org.osate.ui.reportGenerationMenu"
+                   label="Report Generation">
+                <separator
+                      name="core">
+                </separator>
+                <separator
+                      name="third_party">
+                </separator>
+             </menu>
+             <menu
+                   id="org.osate.ui.ocarinaMenu"
+                   label="Ocarina">
+                <separator
+                      name="core">
+                </separator>
+                <separator
+                      name="third_party">
+                </separator>
+             </menu>
+             <command
+                   commandId="org.osate.ui.instantiate">
+             </command>
+             <command
+                   commandId="org.osate.ui.reinstantiate">
+             </command>
+             <separator
+                   name="generateTextual">
+             </separator>
+             <separator
+                   name="third_party">
+             </separator>
+          </menu>
+          <menu
+                id="org.osate.ui.analysesMenu"
+                label="Analyses">
+             <visibleWhen
+                   checkEnabled="false">
+               <reference definitionId="org.osate.ui.definition.inAadlPerspective"/>
+             </visibleWhen>
+             <menu
+                   id="org.osate.ui.budgetMenu"
+                   label="Budget">
+                <separator
+                      name="core">
+                </separator>
+                <separator
+                      name="third_party">
+                </separator>
+             </menu>
+             <menu
+                   id="org.osate.ui.semanticChecksMenu"
+                   label="Semantic Checks">
+                <separator
+                      name="core">
+                </separator>
+                <separator
+                      name="code_generation"
+                      visible="true">
+                </separator>
+                <separator
+                      name="third_party">
+                </separator>
+             </menu>
+             <menu
+                   id="org.osate.ui.timingMenu"
+                   label="Timing">
+                <separator
+                      name="core">
+                </separator>
+                <separator
+                      name="workbench"
+                      visible="true">
+                </separator>
+                <separator
+                      name="third_party">
+                </separator>
+             </menu>
+             <menu
+                   id="org.osate.ui.safetyMenu"
+                   label="Safety">
+                <separator
+                      name="core">
+                </separator>
+                <separator
+                      name="third_party">
+                </separator>
+             </menu>
+             <menu
+                   id="org.osate.ui.modelCleanupMenu"
+                   label="Model Maintenance">
+                <separator
+                      name="core">
+                </separator>
+                <separator
+                      name="third_party">
+                </separator>
+             </menu>
+             <menu
+                   id="org.osate.ui.miscellaneousMenu"
+                   label="Miscellaneous">
+                <separator
+                      name="workbench">
+                </separator>
+                <separator
+                      name="third_party">
+                </separator>
+             </menu>
+             <separator
+                   name="third_party">
+             </separator>
+          </menu>
+       </menuContribution>
+       <menuContribution
+             locationURI="menu:help?after=org.eclipse.equinox.p2.ui.sdk.install">
+          <command
+                commandId="org.eclipse.equinox.p2.ui.discovery.commands.ShowBundleCatalog"
+                label="Install Additional OSATE Components">
+             <parameter
+                   name="org.eclipse.equinox.p2.ui.discovery.commands.DirectoryParameter"
+                   value="https://osate-build.sei.cmu.edu/download/osate/discovery/directory.xml">
+             </parameter>
+          </command>
+       </menuContribution>
+       <menuContribution
+             locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
+          <toolbar
+                id="org.osate.ui.osateWizardsToolbar"
+                label="OSATE Wizards">
+             <visibleWhen
+                   checkEnabled="false">
+                <reference definitionId="org.osate.ui.definition.inAadlPerspective"/>
+             </visibleWhen>
+             <command
+                   commandId="org.osate.ui.wizards.aadlProjectWizard"
+                   tooltip="New AADL project">
+                <!--
+                   Remove visibleWhen on the command when this bug is fixed:
+                   https://bugs.eclipse.org/bugs/show_bug.cgi?id=201589
+                -->
+                <visibleWhen
+                      checkEnabled="false">
+                   <reference definitionId="org.osate.ui.definition.inAadlPerspective"/>
+                </visibleWhen>
+             </command>
+             <command
+                   commandId="org.osate.ui.wizards.packageWizard"
+                   tooltip="New AADL package">
+                <!--
+                   Remove visibleWhen on the command when this bug is fixed:
+                   https://bugs.eclipse.org/bugs/show_bug.cgi?id=201589
+                -->
+                <visibleWhen
+                      checkEnabled="false">
+                   <reference definitionId="org.osate.ui.definition.inAadlPerspective"/>
+                </visibleWhen>
+             </command>
+             <command
+                   commandId="org.osate.ui.wizards.propertySetWizard"
+                   tooltip="New AADL property set">
+                <!--
+                   Remove visibleWhen on the command when this bug is fixed:
+                   https://bugs.eclipse.org/bugs/show_bug.cgi?id=201589
+                -->
+                <visibleWhen
+                      checkEnabled="false">
+                   <reference definitionId="org.osate.ui.definition.inAadlPerspective"/>
+                </visibleWhen>
+             </command>
+             <separator
+                   name="third_party">
+             </separator>
+          </toolbar>
+          <toolbar
+                id="org.osate.ui.budgetToolbar"
+                label="Budget">
+            <visibleWhen
+                  checkEnabled="false">
+               <reference definitionId="org.osate.ui.definition.inAadlPerspective"/>
+            </visibleWhen>
+            <separator
+                  name="core">
+            </separator>
+            <separator
+                  name="third_party">
+            </separator>
+          </toolbar>
+          <toolbar
+                id="org.osate.ui.semanticChecksToolbar"
+                label="Semantic Checks">
+            <visibleWhen
+                  checkEnabled="false">
+               <reference definitionId="org.osate.ui.definition.inAadlPerspective"/>
+            </visibleWhen>
+            <separator
+                  name="core">
+            </separator>
+            <separator
+                  name="code_generation"
+                  visible="true">
+            </separator>
+            <separator
+                  name="third_party">
+            </separator>
+          </toolbar>
+          <toolbar
+                id="org.osate.ui.timingToolbar"
+                label="Timing">
+            <visibleWhen
+                  checkEnabled="false">
+               <reference definitionId="org.osate.ui.definition.inAadlPerspective"/>
+            </visibleWhen>
+            <separator
+                  name="core">
+            </separator>
+            <separator
+                  name="third_party">
+            </separator>
+          </toolbar>
+          <toolbar
+                id="org.osate.ui.safetyToolbar"
+                label="Safety">
+            <visibleWhen
+                  checkEnabled="false">
+               <reference definitionId="org.osate.ui.definition.inAadlPerspective"/>
+            </visibleWhen>
+            <separator
+                  name="core">
+            </separator>
+            <separator
+                  name="third_party">
+            </separator>
+          </toolbar>
+       </menuContribution>
+    </extension>
+    <extension
+          point="org.eclipse.ui.commands">
+       <category
+             id="org.osate.core.modeling.category"
+             name="OSATE Modeling">
+       </category>
+       <command
+       		 categoryId="org.osate.core.modeling.category"
+       		 id="org.osate.ui.showInClassifierInfoView"
+       		 name="Open in Classifier Information View"/>
+       <command
+       		 categoryId="org.osate.core.modeling.category"
+             id="org.osate.ui.setAadlProjectProperties"
+             name="Set As AADL_Project Property Set">
+       </command>
+       <command
+       		categoryId="org.osate.core.modeling.category"
+       		id="org.osate.ui.instantiate"
+       		name="%InstantiateComponent.label">
+       </command>
+       <command
+       		 categoryId="org.osate.core.modeling.category"
+             id="org.osate.ui.reinstantiate"
+             name="%ReinstantiateInstances.label">
+       </command>
+       <command
+       		 categoryId="org.osate.core.modeling.category"
+             id="org.osate.ui.conversion"
+             name="Add/Remove AADL Nature">
+       </command>
+       <category
+             id="org.osate.ui.wizards.category"
+             name="OSATE Wizards">
+       </category>
+       <command
+             categoryId="org.osate.ui.wizards.category"
+             id="org.osate.ui.wizards.aadlProjectWizard"
+             name="New AADL Project">
+       </command>
+       <command
+             categoryId="org.osate.ui.wizards.category"
+             id="org.osate.ui.wizards.packageWizard"
+             name="New AADL Package">
+       </command>
+       <command
+             categoryId="org.osate.ui.wizards.category"
+             id="org.osate.ui.wizards.propertySetWizard"
+             name="New AADL Property Set">
+       </command>
+       <command
+       		 categoryId="org.osate.core.modeling.category"
+             id="org.osate.ui.visualizeProjectDependencies"
+             name="Visualize Project Dependencies">
+       </command>
+       <command
+       		 categoryId="org.osate.core.modeling.category"
+             id="org.osate.ui.visualizeModelUnitDependencies"
+             name="Visualize Package and Property Set Dependencies">
+       </command>
+    </extension>
+    <extension
+          point="org.eclipse.ui.handlers">
+       <handler
+             class="org.osate.ui.handlers.OpenInClassifierInfoViewHandler"
+             commandId="org.osate.ui.showInClassifierInfoView">
+          <enabledWhen>
+             <with
+                   variable="selection">
+                <and>
+                   <count
+                         value="1">
+                   </count>
+                   <or>
+                       <!-- for Text Selection in the XText Editor -->
+                       <instanceof value="org.eclipse.jface.text.ITextSelection" />
+                       
+	                   <iterate>
+	                      <or>
+	                      	 <!-- For the AADL Navigator View -->
+	                         <adapt
+                                   type="org.osate.aadl2.modelsupport.EObjectURIWrapper">
+                                <test
+                                      property="org.osate.aadl2.modelsupport.wrapperSuperType"
+                                      value="Classifier"
+                                      forcePluginActivation="true">
+                                </test>
+	                         </adapt>
+	                          <adapt
+                                   type="org.osate.aadl2.modelsupport.EObjectURIWrapper">
+                                <test
+                                      property="org.osate.aadl2.modelsupport.wrapperSuperType"
+                                      value="Access"
+                                      forcePluginActivation="true">
+                                </test>
+	                         </adapt>
+	                         <adapt
+                                   type="org.osate.aadl2.modelsupport.EObjectURIWrapper">
+                                <test
+                                      property="org.osate.aadl2.modelsupport.wrapperSuperType"
+                                      value="Subcomponent"
+                                      forcePluginActivation="true">
+                                </test>
+	                         </adapt>
+	                         <adapt
+                                   type="org.osate.aadl2.modelsupport.EObjectURIWrapper">
+                                <test
+                                      property="org.osate.aadl2.modelsupport.wrapperSuperType"
+                                      value="DataPort"
+                                      forcePluginActivation="true">
+                                </test>
+	                         </adapt>
+	                         <adapt
+                                   type="org.osate.aadl2.modelsupport.EObjectURIWrapper">
+                                <test
+                                      property="org.osate.aadl2.modelsupport.wrapperSuperType"
+                                      value="Parameter"
+                                      forcePluginActivation="true">
+                                </test>
+	                         </adapt>
+	                         <adapt
+                                   type="org.osate.aadl2.modelsupport.EObjectURIWrapper">
+                                <test
+                                      property="org.osate.aadl2.modelsupport.wrapperSuperType"
+                                      value="FeatureGroup"
+                                      forcePluginActivation="true">
+                                </test>
+	                         </adapt>
+	                         <adapt
+                                   type="org.osate.aadl2.modelsupport.EObjectURIWrapper">
+                                <test
+                                      property="org.osate.aadl2.modelsupport.wrapperSuperType"
+                                      value="Prototype"
+                                      forcePluginActivation="true">
+                                </test>
+	                         </adapt>
+	                         <!-- For the Outline View -->
+	                      	 <adapt type="org.eclipse.xtext.ui.editor.outline.impl.EObjectNode">
+		                         <test
+		                               property="org.osate.ui.superType"
+		                               value="Classifier"
+		                               forcePluginActivation="true"/>
+		                     </adapt>
+		                     <adapt type="org.eclipse.xtext.ui.editor.outline.impl.EObjectNode">
+		                         <test
+		                               property="org.osate.ui.superType"
+		                               value="Subcomponent"
+		                               forcePluginActivation="true"/>
+		                     </adapt>
+		                     <adapt type="org.eclipse.xtext.ui.editor.outline.impl.EObjectNode">
+		                         <test
+		                               property="org.osate.ui.superType"
+		                               value="DataPort"
+		                               forcePluginActivation="true"/>
+		                     </adapt>
+		                     <adapt type="org.eclipse.xtext.ui.editor.outline.impl.EObjectNode">
+		                         <test
+		                               property="org.osate.ui.superType"
+		                               value="Parameter"
+		                               forcePluginActivation="true"/>
+		                     </adapt>
+		                     <adapt type="org.eclipse.xtext.ui.editor.outline.impl.EObjectNode">
+		                         <test
+		                               property="org.osate.ui.superType"
+		                               value="Prototype"
+		                               forcePluginActivation="true"/>
+		                     </adapt>
+		                     <adapt type="org.eclipse.xtext.ui.editor.outline.impl.EObjectNode">
+		                         <test
+		                               property="org.osate.ui.superType"
+		                               value="FeatureGroup"
+		                               forcePluginActivation="true"/>
+		                     </adapt>
+		                     <adapt type="org.eclipse.xtext.ui.editor.outline.impl.EObjectNode">
+		                         <test
+		                               property="org.osate.ui.superType"
+		                               value="Access"
+		                               forcePluginActivation="true"/>
+		                     </adapt>
+	                      </or>
+	                   </iterate>
+                   </or>
+                </and>
+             </with>
+          </enabledWhen>
+       </handler>
+       <handler
+             class="org.osate.ui.handlers.InstantiationHandler"
+             commandId="org.osate.ui.instantiate">
+          <enabledWhen>
+             <with
+                   variable="selection">
+                <and>
+                   <count
+                         value="+">
+                   </count>
+                   <iterate>
+                      <or>
+                         <reference definitionId="org.osate.ui.definition.isInstantiatableEObjectURIWrapper" />
+                         <reference definitionId="org.osate.ui.definition.isPackageFile" />
+                         <reference definitionId="org.osate.ui.definition.isInstantiatableEObjectNode" />
+                      </or>
+                   </iterate>
+                </and>
+             </with>
+          </enabledWhen>
+       </handler>
+       <handler
+             commandId="org.osate.ui.reinstantiate"
+             class="org.osate.ui.handlers.ReinstantiationHandler">
+          <enabledWhen>
+             <with
+                   variable="selection">
+                <and>
+                   <count
+                         value="+">
+                   </count>
+                   <iterate
+                         ifEmpty="false"
+                         operator="and">
+                      <or>
+                         <reference definitionId="org.osate.ui.definition.isWorkingSet"/>
+                         <reference definitionId="org.osate.ui.definition.isAADLProject" />
+                         <reference definitionId="org.osate.ui.definition.isAADLFolder" />
+                         <reference definitionId="org.osate.ui.definition.isInstanceFile" />
+	                     <reference definitionId="org.osate.ui.definition.isSystemInstance"/>
+                      </or>
+                   </iterate>
+                </and>
+             </with>
+          </enabledWhen>
+       </handler>
+       <handler
+             class="org.osate.ui.handlers.ConversionHandler"
+             commandId="org.osate.ui.conversion">
+       </handler>
+       <handler
+            class="org.osate.ui.handlers.WizardLauncherHandler"
+            commandId="org.osate.ui.wizards.aadlProjectWizard">
+      </handler>
+      <handler
+            class="org.osate.ui.handlers.NewPackageWizardHandler"
+            commandId="org.osate.ui.wizards.packageWizard">
+      </handler>
+      <handler
+            class="org.osate.ui.handlers.NewPropertySetWizardHandler"
+            commandId="org.osate.ui.wizards.propertySetWizard">
+      </handler>
+      <handler
+             class="org.osate.ui.dependencyvisualization.VisualizeProjectDependenciesHandler"
+             commandId="org.osate.ui.visualizeProjectDependencies">
+          <enabledWhen>
+             <with
+                   variable="selection">
+                <and>
+                   <count
+                         value="1">
+                   </count>
+                   <iterate>
+                      <reference definitionId="org.osate.ui.definition.isWorkingSetOrOpenProject"/>
+                   </iterate>
+                </and>
+             </with>
+          </enabledWhen>
+       </handler>
+       <handler
+             class="org.osate.ui.dependencyvisualization.VisualizeModelUnitDependenciesHandler"
+             commandId="org.osate.ui.visualizeModelUnitDependencies">
+          <enabledWhen>
+             <with
+                   variable="selection">
+                <and>
+                   <count
+                         value="1">
+                   </count>
+                   <iterate>
+                      <reference definitionId="org.osate.ui.definition.isWorkingSetOrOpenProject"/>
+                   </iterate>
+                </and>
+             </with>
+          </enabledWhen>
+       </handler>
+    </extension>
+    <extension
+          point="org.eclipse.ui.commandImages">
+       <image
+             commandId="org.osate.ui.reinstantiate"
+             icon="icons/reinstantiate.gif">
+       </image>
+       <image
+            commandId="org.osate.ui.wizards.aadlProjectWizard"
+            icon="icons/new_aadl_project.gif">
+      </image>
+      <image
+            commandId="org.osate.ui.wizards.packageWizard"
+            icon="icons/new_package.gif">
+      </image>
+      <image
+            commandId="org.osate.ui.wizards.propertySetWizard"
+            icon="icons/new_ps.gif">
+      </image>
+      <image
+            commandId="org.osate.ui.visualizeProjectDependencies"
+            icon="icons/project.png">
+      </image>
+      <image
+            commandId="org.osate.ui.visualizeModelUnitDependencies"
+            icon="icons/package.gif">
+      </image>
+    </extension>
+    <extension
+          point="org.eclipse.core.expressions.propertyTesters">
+       <propertyTester
+             class="org.osate.ui.handlers.ContributedAadlStoragePropertyTester"
+             id="org.osate.ui.ContributedAadlStoragePropertyTester"
+             namespace="org.osate.ui"
+             properties="name,aadlPropertySet"
+             type="org.osate.xtext.aadl2.ui.resource.ContributedAadlStorage">
+       </propertyTester>
+       
+       <propertyTester
+       		class="org.osate.ui.handlers.EObjectNodeAadlSuperTypePropertyTester"
+            id="org.osate.ui.EObjectSuperTypePropertyTester"
+            namespace="org.osate.ui"
+            properties="superType"
+            type="org.eclipse.xtext.ui.editor.outline.impl.EObjectNode">
+       </propertyTester>
+       
+       <propertyTester
+       		class="org.osate.ui.handlers.AadlFileTypePropertyTester"
+            id="org.osate.ui.AadlPackagePropertyTester"
+            namespace="org.osate.ui"
+            properties="aadlPackage"
+            type="org.eclipse.core.resources.IFile">
+       </propertyTester>
+       
+       <propertyTester
+       		class="org.osate.ui.handlers.AadlFileTypePropertyTester"
+            id="org.osate.ui.AadlPropertySetPropertyTester"
+            namespace="org.osate.ui"
+            properties="aadlPropertySet"
+            type="org.eclipse.core.resources.IFile">
+       </propertyTester>
+    </extension>
+   <extension
+         point="org.eclipse.help.toc">
+      <toc
+            file="toc_ui.xml"
+            primary="true">
+      </toc>
+      <toc
+            file="toc_projectVisualization.xml"
+            primary="true">
+      </toc>
+      <toc
+            file="toc_modelUnitVisualization.xml"
+            primary="true">
+      </toc>
+        <toc
+            file="toc_importWizard.xml"
+            primary="true">
+      </toc>
+   </extension>
+   <extension point="org.eclipse.help.contexts">
+      <contexts file="help/importWizard.xml" />
+   </extension>
+   <extension
+         point="org.eclipse.ui.bindings">
+      <key
+            commandId="org.osate.ui.showInClassifierInfoView"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M3+C">
+      </key>
+      <key
+            commandId="org.osate.ui.instantiate"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+I">
+      </key>
+   </extension>   
+</plugin>

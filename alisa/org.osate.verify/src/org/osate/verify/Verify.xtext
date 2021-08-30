@@ -1,0 +1,220 @@
+/**
+ * Copyright (c) 2004-2021 Carnegie Mellon University and others. (see Contributors file). 
+ * All Rights Reserved.
+ * 
+ * NO WARRANTY. ALL MATERIAL IS FURNISHED ON AN "AS-IS" BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY
+ * KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE
+ * OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT
+ * MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
+ * 
+ * This program and the accompanying materials are made available under the terms of the Eclipse Public License 2.0
+ * which is available at https://www.eclipse.org/legal/epl-2.0/
+ * SPDX-License-Identifier: EPL-2.0
+ * 
+ * Created, in part, with funding and support from the United States Government. (see Acknowledgments file).
+ * 
+ * This program includes and/or can make use of certain third party source code, object code, documentation and other
+ * files ("Third Party Software"). The Third Party Software that is used by this program is dependent upon your system
+ * configuration. By using this program, You agree to comply with any and all relevant Third Party Software terms and
+ * conditions contained in any such Third Party Software or separate license file distributed with such Third Party
+ * Software. The parties who own the Third Party Software ("Third Party Licensors") are intended third party benefici-
+ * aries to this license with respect to the terms applicable to their Third Party Software. Third Party Software li-
+ * censes only apply to the Third Party Software and not any other portion of this program or this program as a whole.
+ */
+grammar org.osate.verify.Verify with org.osate.alisa.common.Common
+
+generate verify "http://www.osate.org/verify/Verify"
+import "http://aadl.info/AADL/2.0" as aadl2
+import "http://www.osate.org/reqspec/ReqSpec" as ReqSpec
+import "http://www.osate.org/categories/Categories" as categories
+import "http://www.osate.org/alisa/common/Common" as common
+import "http://www.eclipse.org/emf/2002/Ecore" as ecore
+
+Verification:
+	contents+=	( VerificationPlan  | VerificationMethodRegistry)+;
+
+VerificationPlan returns VerificationPlan:
+	'verification' 'plan' name=QualifiedName (':' title=STRING)? 
+	'for' requirementSet=[ReqSpec::RequirementSet|QualifiedName]  
+	'['
+	(
+		( description=Description)?
+	& claim+=Claim*
+	& rationale=Rationale?
+	& ('issues' issues+=STRING+ )?
+	)
+	']';
+
+
+Claim:
+	{Claim}'claim' requirement=[ReqSpec::Requirement|QualifiedName]?  (':' title=STRING)?
+	'['
+	(
+		  ('activities' activities += VerificationActivity*)?
+		& ('assert' assert=ArgumentExpr)?
+		& rationale=Rationale?
+		&('weight' weight=INT )?
+		& subclaim+=Claim*
+		& ('issues' issues+=STRING+ )?
+	)  
+	']'
+;
+
+
+ArgumentExpr:
+	ThenEvidenceExpr;
+
+ThenEvidenceExpr returns ArgumentExpr:
+	ElseEvidenceExpr (=> ({ThenExpr.left=current} 'then') successor=ThenEvidenceExpr)*;
+
+	// Execute as alternative if the first one fails.
+// The results of both are reported
+ElseEvidenceExpr returns ArgumentExpr:
+	SingleElseEvidenceExpr | CompositeElseEvidenceExpr
+;
+	
+SingleElseEvidenceExpr returns ArgumentExpr:	
+	VAReference (=> ({ElseExpr.left=current} 'else') 
+		(error=ElseEvidenceExpr | 
+				'[' ('fail' ':' fail=ThenEvidenceExpr)? ('timeout' ':' timeout=ThenEvidenceExpr)? 
+				('error' ':' error=ThenEvidenceExpr)? 
+				 ']'
+		)
+	)*
+	;
+
+CompositeElseEvidenceExpr returns ArgumentExpr:	
+	CompositeEvidenceExpr (=> ({ElseExpr.left=current} 'else') 
+		error=ElseEvidenceExpr 
+	)*
+	;
+
+
+QuantifiedEvidenceExpr returns ArgumentExpr:
+	 'all' {AllExpr} '[' elements+=ThenEvidenceExpr (',' elements+=ThenEvidenceExpr)* ']' ;
+
+
+CompositeEvidenceExpr returns ArgumentExpr:
+	 '(' ThenEvidenceExpr ')' | QuantifiedEvidenceExpr;
+
+VAReference returns ArgumentExpr:
+	{RefExpr} verification=[VerificationActivity|ID]
+;
+
+ComputeRef:
+	compute=[common::ComputeDeclaration|ID]
+;
+
+VerificationActivity:
+	name=ID (':' title=STRING)? 
+	':'
+	(computes+=ComputeRef (',' computes+=ComputeRef)* '=')?
+	method=[VerificationMethod|QualifiedName] 
+//	'(' (parameters+=[common::ValDeclaration|ID] (',' parameters+=[common::ValDeclaration|ID])*)? ')' 
+	'(' (actuals+=AExpression (',' actuals+=AExpression)*)? ')' 
+	(
+		'property' 'values' '(' 
+		(propertyValues+=AExpression (',' propertyValues+=AExpression)*)? 
+		')'
+	)?
+	('['(
+ 	('category'  category+=[categories::Category|QualifiedName]+ )?
+	&('timeout' timeout=AIntegerTerm)?
+	&('weight' weight=INT)?
+	)']')?
+;
+
+
+VerificationValidation returns VerificationCondition:
+	'validation' {VerificationValidation}  
+			method=[VerificationMethod|QualifiedName] 
+			'(' (parameters+=[FormalParameter|ID] (',' parameters+=[FormalParameter| ID])*)? ')'
+	;
+
+VerificationPrecondition returns VerificationCondition:
+	'precondition' {VerificationPrecondition} 
+			method=[VerificationMethod|QualifiedName] 
+			'(' (parameters+=[FormalParameter|ID] (',' parameters+=[FormalParameter| ID])*)? ')'
+	;
+
+VerificationMethodRegistry returns VerificationMethodRegistry:
+	'verification' 'methods' name=QualifiedName
+	(':' title=STRING)?
+//	( 'for' (target=[aadl2::ComponentClassifier|AadlClassifierReference] | componentCategory+=ComponentCategory+ ))?
+	'[' (
+	( description=Description)?
+	methods+=VerificationMethod*)
+	']';
+
+	
+FormalParameter returns FormalParameter:
+	name=ID ':' (type=TypeRef | 'typeof' type=PropertyRef) ('in' unit=[aadl2::UnitLiteral|ID])?;
+
+VerificationMethod:
+	'method' name=ID 
+	(
+		'(' ((targetType=TargetType)? | (formals+=FormalParameter (',' formals+=FormalParameter)*)
+			| (targetType=TargetType ','formals+=FormalParameter (',' formals+=FormalParameter)*))
+		')'
+		(
+			'properties' '('
+			(properties+=[aadl2::Property|AADLPROPERTYREFERENCE] (',' properties+=[aadl2::Property|AADLPROPERTYREFERENCE])*)? 
+			')'
+		)?
+		(
+			'returns' '('
+			(results+=FormalParameter (',' results+=FormalParameter)*)? 
+			')'
+		)?
+		(isPredicate?='boolean'|isResultReport?='report')?
+	)? 
+	(':' title=STRING)?
+	( 'for' (target=[aadl2::ComponentClassifier|AadlClassifierReference] | componentCategory+=ComponentCategory+ ))?
+	'['
+	(
+		  methodKind=MethodKind 
+		& description=Description?
+		& precondition=VerificationPrecondition?
+		& validation=VerificationValidation?
+ 	&('category'  category+=[categories::Category|QualifiedName]+ )?
+	)
+	']'
+	;
+
+MethodKind:
+	ResoluteMethod | JavaMethod | ManualMethod | PluginMethod | AgreeMethod|JUnit4Method | PythonMethod
+;
+	
+	ResoluteMethod:
+		'resolute' methodReference=[ecore::EObject|QualifiedName]
+	;
+	
+	JavaMethod:
+		'java' methodPath=QualifiedName ('(' (params+=JavaParameter (',' params+=JavaParameter)*)?')')?
+	;
+	
+	PythonMethod:
+		'python' methodPath=QualifiedName
+	;
+	
+	ManualMethod:
+		'manual' {ManualMethod} dialogID=QualifiedName
+	;
+	
+	PluginMethod:
+		'plugin' methodID=ID
+	;
+
+	AgreeMethod:
+		'agree' (singleLayer?='single' | all?='all')
+	;
+
+	JUnit4Method:
+		'junit' classPath=QualifiedName
+	;
+
+	
+JavaParameter returns JavaParameter:
+	parameterType=ID name=ID ;
+
+

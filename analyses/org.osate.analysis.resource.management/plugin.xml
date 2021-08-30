@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright (c) 2004-2021 Carnegie Mellon University and others. (see Contributors file). 
+All Rights Reserved.
+
+NO WARRANTY. ALL MATERIAL IS FURNISHED ON AN "AS-IS" BASIS. CARNEGIE MELLON UNIVERSITY MAKES NO WARRANTIES OF ANY
+KIND, EITHER EXPRESSED OR IMPLIED, AS TO ANY MATTER INCLUDING, BUT NOT LIMITED TO, WARRANTY OF FITNESS FOR PURPOSE
+OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS OBTAINED FROM USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT
+MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM PATENT, TRADEMARK, OR COPYRIGHT INFRINGEMENT.
+
+This program and the accompanying materials are made available under the terms of the Eclipse Public License 2.0
+which is available at https://www.eclipse.org/legal/epl-2.0/
+SPDX-License-Identifier: EPL-2.0
+
+Created, in part, with funding and support from the United States Government. (see Acknowledgments file).
+
+This program includes and/or can make use of certain third party source code, object code, documentation and other
+files ("Third Party Software"). The Third Party Software that is used by this program is dependent upon your system
+configuration. By using this program, You agree to comply with any and all relevant Third Party Software terms and
+conditions contained in any such Third Party Software or separate license file distributed with such Third Party
+Software. The parties who own the Third Party Software ("Third Party Licensors") are intended third party benefici-
+aries to this license with respect to the terms applicable to their Third Party Software. Third Party Software li-
+censes only apply to the Third Party Software and not any other portion of this program or this program as a whole.
+-->
+<?eclipse version="3.0"?>
+<plugin>
+   <extension
+         id="BinpackObjectMarker"
+         name="Thread Binding Analysis Marker"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.osate.aadl2.modelsupport.AadlObjectMarker"/>
+      <persistent value="true"/>
+   </extension>
+   
+   <extension
+         id="ScheduleObjectMarker"
+         name="Scheduling Analysis Marker"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.osate.aadl2.modelsupport.AadlObjectMarker"/>
+      <persistent value="true"/>
+   </extension>
+   
+   <extension
+         id="InversionObjectMarker"
+         name="Priority Inversion Analysis Marker"
+         point="org.eclipse.core.resources.markers">
+      <super type="org.osate.aadl2.modelsupport.AadlObjectMarker"/>
+      <persistent value="true"/>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.commands">
+      <category
+            id="org.osate.analysis.category"
+            name="%actionSet.label">
+      </category>
+      <command
+            categoryId="org.osate.analysis.category"
+            id="org.osate.analysis.resource.management.checkPriorityInversion"
+            name="%CheckPriorityInversion.label">
+      </command>
+      <command
+            categoryId="org.osate.analysis.category"
+            id="org.osate.analysis.resource.management.schedule"
+            name="%Schedule.label">
+      </command>
+      <command
+            categoryId="org.osate.analysis.category"
+            id="org.osate.analysis.resource.management.binpack"
+            name="%Binpack.label">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="org.osate.analysis.resource.management.handlers.CheckPriorityInversion"
+            commandId="org.osate.analysis.resource.management.checkPriorityInversion">
+         <enabledWhen>
+            <reference definitionId="org.osate.ui.definition.isInstanceFileOrSystemInstanceSelected"/>
+         </enabledWhen>
+      </handler>
+      <handler
+            class="org.osate.analysis.resource.management.handlers.Schedule"
+            commandId="org.osate.analysis.resource.management.schedule">
+         <enabledWhen>
+            <reference definitionId="org.osate.ui.definition.isInstanceFileOrSystemInstanceSelected"/>
+         </enabledWhen>
+      </handler>
+      <handler
+            class="org.osate.analysis.resource.management.handlers.Binpack"
+            commandId="org.osate.analysis.resource.management.binpack">
+         <enabledWhen>
+            <reference definitionId="org.osate.ui.definition.isInstanceFileOrSystemInstanceSelected"/>
+         </enabledWhen>
+      </handler>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commandImages">
+      <image
+            commandId="org.osate.analysis.resource.management.checkPriorityInversion"
+            icon="icons/inversion.gif"
+            disabledIcon="icons/noInversion.gif">
+      </image>
+      <image
+            commandId="org.osate.analysis.resource.management.schedule"
+            icon="icons/schedule.gif"
+            disabledIcon="icons/noSchedule.gif">
+      </image>
+      <image
+            commandId="org.osate.analysis.resource.management.binpack"
+            icon="icons/binpack.gif"
+            disabledIcon="icons/noBinpack.gif">
+      </image>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="menu:org.osate.ui.timingMenu?after=core">
+         <command
+               commandId="org.osate.analysis.resource.management.binpack">
+         </command>
+         <command
+               commandId="org.osate.analysis.resource.management.checkPriorityInversion">
+         </command>
+         <command
+               commandId="org.osate.analysis.resource.management.schedule">
+         </command>
+      </menuContribution>
+      <menuContribution
+            locationURI="toolbar:org.osate.ui.timingToolbar?after=core">
+         <command
+               commandId="org.osate.analysis.resource.management.binpack"
+               tooltip="%Binpack.toolTip">
+            <!--
+               Remove visibleWhen on the command when this bug is fixed:
+               https://bugs.eclipse.org/bugs/show_bug.cgi?id=201589
+            -->
+            <visibleWhen
+                  checkEnabled="false">
+               <reference definitionId="org.osate.ui.definition.inAadlPerspective"/>
+            </visibleWhen>
+         </command>
+         <command
+               commandId="org.osate.analysis.resource.management.checkPriorityInversion"
+               tooltip="%CheckPriorityInversion.toolTip">
+            <!--
+               Remove visibleWhen on the command when this bug is fixed:
+               https://bugs.eclipse.org/bugs/show_bug.cgi?id=201589
+            -->
+            <visibleWhen
+                  checkEnabled="false">
+               <reference definitionId="org.osate.ui.definition.inAadlPerspective"/>
+            </visibleWhen>
+         </command>
+         <command
+               commandId="org.osate.analysis.resource.management.schedule"
+               tooltip="Schedule bound threads">
+            <!--
+               Remove visibleWhen on the command when this bug is fixed:
+               https://bugs.eclipse.org/bugs/show_bug.cgi?id=201589
+            -->
+            <visibleWhen
+                  checkEnabled="false">
+               <reference definitionId="org.osate.ui.definition.inAadlPerspective"/>
+            </visibleWhen>
+         </command>
+      </menuContribution>
+      <menuContribution
+            locationURI="popup:org.osate.ui.timingNavigatorPopup?after=core">
+         <command
+               commandId="org.osate.analysis.resource.management.binpack">
+            <visibleWhen
+                  checkEnabled="true">
+            </visibleWhen>
+         </command>
+         <command
+               commandId="org.osate.analysis.resource.management.checkPriorityInversion">
+            <visibleWhen
+                  checkEnabled="true">
+            </visibleWhen>
+         </command>
+         <command
+               commandId="org.osate.analysis.resource.management.schedule">
+            <visibleWhen
+                  checkEnabled="true">
+            </visibleWhen>
+         </command>
+      </menuContribution>
+   </extension>
+   
+   
+   <extension
+         point="org.eclipse.help.toc">
+      <toc
+            file="help/toc_scheduling.xml"
+            primary="true">
+      </toc>
+   </extension>
+
+   
+</plugin>
